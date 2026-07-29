@@ -1,5 +1,5 @@
 export type Energy = 'baixa' | 'media' | 'alta'
-export type View = 'hoje' | 'semana' | 'planejamento' | 'recompensas' | 'configuracoes'
+export type View = 'hoje' | 'semana' | 'planejamento' | 'equipe' | 'habitos' | 'recompensas' | 'conta' | 'configuracoes'
 export type PlanningTab = 'rotina' | 'projetos' | 'objetivos'
 export type Theme = 'sereno' | 'lavanda'
 export type TechniqueId = 'pomodoro' | 'sprint-gentil' | 'timeboxing' | 'primeiro-passo'

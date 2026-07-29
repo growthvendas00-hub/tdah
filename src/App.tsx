@@ -3,10 +3,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { GoalDialog, MilestoneDialog, MissionDialog, ProjectDialog, RoutineDialog, SearchDialog } from './components/Dialogs'
 import { Navigation } from './components/Navigation'
 import { useFocoState } from './hooks/useFocoState'
+import { useTeamState } from './hooks/useTeamState'
+import { AccountPage } from './pages/AccountPage'
+import { HabitsPage } from './pages/HabitsPage'
 import { PlanningPage } from './pages/PlanningPage'
 import { RewardsPage } from './pages/RewardsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { TodayPage } from './pages/TodayPage'
+import { TeamPage } from './pages/TeamPage'
 import { WeekPage } from './pages/WeekPage'
 import type { Mission, PlanningTab, View } from './types'
 
@@ -14,6 +18,7 @@ type Dialog = 'mission' | 'project' | 'goal' | 'routine' | 'search' | null
 
 function App() {
   const { state, todayMissions, actions } = useFocoState()
+  const team = useTeamState()
   const [view, setView] = useState<View>('hoje')
   const [planningTab, setPlanningTab] = useState<PlanningTab>('rotina')
   const [dialog, setDialog] = useState<Dialog>(null)
@@ -38,12 +43,15 @@ function App() {
   const milestoneProject = state.projects.find((item) => item.id === milestoneProjectId)
 
   return <div className={`app-shell theme-${state.settings.activeTheme} ${state.settings.reducedMotion ? 'reduce-motion' : ''}`}>
-    <Navigation state={state} view={view} mobileOpen={mobileMenu} navigate={navigate} closeMobile={() => setMobileMenu(false)} openMobile={() => setMobileMenu(true)} openSearch={() => setDialog('search')} />
+    <Navigation state={state} teamState={team.state} view={view} mobileOpen={mobileMenu} navigate={navigate} closeMobile={() => setMobileMenu(false)} openMobile={() => setMobileMenu(true)} openSearch={() => setDialog('search')} />
     <main className="main-content">
       {view === 'hoje' && <TodayPage state={state} missions={todayMissions} actions={actions} complete={complete} openMission={() => setDialog('mission')} navigate={navigate} openPlanning={openPlanning} />}
       {view === 'semana' && <WeekPage state={state} />}
       {view === 'planejamento' && <PlanningPage state={state} actions={actions} tab={planningTab} setTab={setPlanningTab} openRoutine={() => setDialog('routine')} openProject={() => setDialog('project')} openGoal={() => setDialog('goal')} openMilestone={setMilestoneProjectId} />}
+      {view === 'equipe' && <TeamPage state={team.state} actions={team.actions} openAccount={() => navigate('conta')} notify={notify} />}
+      {view === 'habitos' && <HabitsPage state={team.state} actions={team.actions} openAccount={() => navigate('conta')} notify={notify} />}
       {view === 'recompensas' && <RewardsPage state={state} actions={actions} notify={notify} />}
+      {view === 'conta' && <AccountPage state={team.state} session={team.session} actions={team.actions} notify={notify} />}
       {view === 'configuracoes' && <SettingsPage state={state} actions={actions} notify={notify} />}
     </main>
     {dialog === 'mission' && <MissionDialog state={state} actions={actions} close={() => setDialog(null)} notify={notify} />}

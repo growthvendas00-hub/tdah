@@ -17,6 +17,10 @@ Um organizador pessoal acolhedor e gamificado, pensado para reduzir a fricção 
 - migração automática dos dados da primeira versão;
 - dados salvos localmente no navegador;
 - interface responsiva para celular, tablet e computador.
+- workspace **Metas Business** com quadro, projetos, responsáveis, objetivos, perfis e ranking;
+- contas e sincronização entre sócios quando conectado ao Supabase;
+- modo demonstração local para testar a colaboração sem configuração;
+- acompanhamento privado e opcionalmente compartilhável de redução de hábitos.
 
 ## Desenvolvimento
 
@@ -44,8 +48,9 @@ O projeto inclui `vercel.json` e está pronto para deploy como aplicação Vite.
 1. Na Vercel, escolha **Add New > Project**.
 2. Importe o repositório `growthvendas00-hub/tdah`.
 3. Confirme o framework **Vite**.
-4. Não configure variáveis de ambiente nesta versão.
-5. Clique em **Deploy**.
+4. Para contas reais, configure `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
+5. Execute a migration em `supabase/migrations` no SQL Editor do Supabase.
+6. Clique em **Deploy**.
 
 Configuração esperada:
 
@@ -55,7 +60,7 @@ Configuração esperada:
 
 ## Privacidade e limites atuais
 
-Os dados ficam somente no navegador. O controle de tela é informado manualmente e o aplicativo não acessa outros programas ou o histórico do aparelho. Como ainda não há conta ou servidor, dispositivos diferentes não compartilham os dados.
+O painel pessoal continua no navegador. O controle de tela é manual e o aplicativo não acessa outros programas. Quando o Supabase está configurado, contas, workspaces e hábitos autorizados sincronizam entre aparelhos; sem ele, esses módulos usam a demonstração local.
 
 ## Princípios do produto
 
