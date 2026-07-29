@@ -1,61 +1,61 @@
 # Foco — organização no seu ritmo
 
-Um organizador pessoal pensado para reduzir a fricção de começar. Projetos viram missões pequenas, missões rendem XP e moedas, e o progresso pode ser trocado por recompensas.
+Um organizador pessoal acolhedor e gamificado, pensado para reduzir a fricção de começar e apoiar pessoas com TDAH sem transformar produtividade em cobrança.
 
 ## O que já funciona
 
-- painel diário que se adapta ao nível de energia;
-- sugestão automática do próximo passo;
-- criação e conclusão de missões;
-- criação e progresso de projetos;
-- moedas, XP, níveis e recompensas;
-- feedback positivo sem punição por quebrar sequências;
-- dados salvos automaticamente no navegador;
+- painel **Meu dia** com nível de energia, próximo passo e metas diárias;
+- conclusão de missões com XP, moedas, celebração e histórico por data;
+- **Minha semana** com gráfico, resumo de foco, tela, metas e conquistas;
+- controle manual de tempo de tela, sem permissões invasivas;
+- planejamento interno de rotina, projetos e objetivos de vida;
+- técnicas explicadas de forma curta: Pomodoro, Timeboxing e Sprint gentil;
+- projetos com marcos reais e progresso calculado pelas entregas;
+- objetivos com prazo, unidade, progresso e recompensas;
+- loja com temas, experiências e itens desbloqueáveis de verdade;
+- busca global, configurações, tema Lavanda e redução de movimento;
+- migração automática dos dados da primeira versão;
+- dados salvos localmente no navegador;
 - interface responsiva para celular, tablet e computador.
 
-## Como abrir
+## Desenvolvimento
 
-Abra um terminal nesta pasta e execute:
+Requer Node.js 20 ou superior.
 
 ```bash
+npm ci
 npm run dev
 ```
 
-Depois acesse o endereço exibido no terminal, normalmente `http://localhost:5173`.
+O endereço local normalmente será `http://localhost:5173`.
 
-Para gerar a versão final:
+### Validação
 
 ```bash
+npm test
+npm run lint
 npm run build
 ```
 
 ## Publicar na Vercel
 
-O projeto já inclui `vercel.json` e está pronto para deploy como aplicação Vite.
+O projeto inclui `vercel.json` e está pronto para deploy como aplicação Vite.
 
 1. Na Vercel, escolha **Add New > Project**.
 2. Importe o repositório `growthvendas00-hub/tdah`.
-3. A Vercel identificará o framework Vite automaticamente.
-4. Não é necessário configurar variáveis de ambiente nesta versão.
-5. Confirme em **Deploy**.
+3. Confirme o framework **Vite**.
+4. Não configure variáveis de ambiente nesta versão.
+5. Clique em **Deploy**.
 
-Configurações utilizadas:
+Configuração esperada:
 
 - instalação: `npm ci`;
 - build: `npm run build`;
-- pasta de saída: `dist`;
-- Node.js: versão 22 recomendada.
+- saída: `dist`.
 
-Os dados pessoais do aplicativo são armazenados apenas no navegador usado. Por enquanto, dispositivos diferentes não compartilham projetos e missões.
+## Privacidade e limites atuais
 
-## Próximos capítulos possíveis
-
-1. Rotinas recorrentes e planejamento semanal.
-2. Cronômetro de foco com pausas adaptativas.
-3. Recompensas personalizadas e inventário visual.
-4. Missões sugeridas por contexto e energia.
-5. Conta e sincronização entre dispositivos.
-6. Histórico gentil para identificar padrões sem culpa.
+Os dados ficam somente no navegador. O controle de tela é informado manualmente e o aplicativo não acessa outros programas ou o histórico do aparelho. Como ainda não há conta ou servidor, dispositivos diferentes não compartilham os dados.
 
 ## Princípios do produto
 

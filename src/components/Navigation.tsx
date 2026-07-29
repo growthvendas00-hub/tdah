@@ -1,0 +1,44 @@
+import { BarChart3, Bell, CalendarRange, Coins, Gift, Home, Menu, Search, Settings, X, Zap } from 'lucide-react'
+import type { AppState, View } from '../types'
+import { localDate } from '../lib/store'
+
+function Logo() { return <div className="logo-symbol"><span /><span /></div> }
+
+export function Navigation({ state, view, mobileOpen, navigate, closeMobile, openMobile, openSearch }: {
+  state: AppState; view: View; mobileOpen: boolean; navigate: (view: View) => void; closeMobile: () => void; openMobile: () => void; openSearch: () => void
+}) {
+  const nav = [
+    { id: 'hoje' as View, label: 'Meu dia', icon: Home },
+    { id: 'semana' as View, label: 'Minha semana', icon: BarChart3 },
+    { id: 'planejamento' as View, label: 'Planejamento', icon: CalendarRange },
+    { id: 'recompensas' as View, label: 'Recompensas', icon: Gift },
+  ]
+  const todayCount = state.activities.filter((item) => item.date === localDate()).length
+  return <>
+    {mobileOpen && <button className="nav-backdrop" onClick={closeMobile} aria-label="Fechar menu" />}
+    <aside className={`side-nav ${mobileOpen ? 'open' : ''}`}>
+      <div className="side-brand"><Logo /><span>Foco</span><small>beta</small><button className="icon-button mobile-close" onClick={closeMobile} aria-label="Fechar menu"><X size={19} /></button></div>
+      <button className="search-trigger" onClick={openSearch}><Search size={16} /><span>Buscar...</span><kbd>⌘ K</kbd></button>
+      <nav aria-label="Navegação principal">
+        <p className="nav-heading">ORGANIZAR</p>
+        {nav.map(({ id, label, icon: Icon }) => <button key={id} className={view === id ? 'active' : ''} onClick={() => navigate(id)}><Icon size={18} /><span>{label}</span>{id === 'semana' && todayCount > 0 && <i>{todayCount}</i>}</button>)}
+      </nav>
+      <div className="side-spacer" />
+      <div className="level-card">
+        <div className="level-card-head"><span><Zap size={15} /> Nível {state.level}</span><small>{state.xp % 100}/100 XP</small></div>
+        <div className="soft-progress"><i style={{ width: `${state.xp % 100}%` }} /></div>
+        <p>Mais um pouco e você evolui.</p>
+      </div>
+      <button className={`side-settings ${view === 'configuracoes' ? 'active' : ''}`} onClick={() => navigate('configuracoes')}><Settings size={18} />Configurações</button>
+    </aside>
+    <header className="app-header">
+      <button className="icon-button mobile-menu" onClick={openMobile} aria-label="Abrir menu"><Menu size={20} /></button>
+      <div className="mobile-logo"><Logo /><strong>Foco</strong></div>
+      <div className="header-spacer" />
+      <button className="header-progress" onClick={() => navigate('semana')}><span>Nível {state.level}</span><div className="soft-progress"><i style={{ width: `${state.xp % 100}%` }} /></div><small>{100 - state.xp % 100} XP</small></button>
+      <button className="header-coins" onClick={() => navigate('recompensas')}><Coins size={16} /><strong>{state.coins}</strong><span>moedas</span></button>
+      <button className="icon-button" onClick={() => navigate('semana')} aria-label="Ver atividades"><Bell size={18} />{todayCount > 0 && <b />}</button>
+      <button className="profile-button" onClick={() => navigate('configuracoes')}>{state.settings.displayName?.slice(0, 1).toUpperCase() || 'F'}</button>
+    </header>
+  </>
+}
