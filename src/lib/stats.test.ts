@@ -12,15 +12,23 @@ describe('weekly statistics', () => {
 
   it('aggregates focus minutes and missions from dated activities', () => {
     const state = createInitialState()
+    state.activities.push(
+      { id: 'focus', type: 'focus', title: 'Foco', date: dayOffset(0), xp: 10, coins: 5, minutes: 50 },
+      { id: 'mission-1', type: 'mission', title: 'Entrega 1', date: dayOffset(0), xp: 10, coins: 5 },
+      { id: 'mission-2', type: 'mission', title: 'Entrega 2', date: dayOffset(-1), xp: 10, coins: 5 },
+    )
     const stats = getWeekStats(state)
     expect(stats.reduce((sum, day) => sum + day.focus, 0)).toBe(50)
-    expect(stats.reduce((sum, day) => sum + day.missions, 0)).toBe(4)
+    expect(stats.reduce((sum, day) => sum + day.missions, 0)).toBe(2)
   })
 
   it('calculates project progress from concrete milestones', () => {
     const state = createInitialState()
-    expect(projectProgress(state, 'p1')).toBe(33)
-    expect(projectProgress(state, 'p2')).toBe(50)
+    state.projects.push({ id: 'p1', name: 'Projeto', color: '#000', why: '', progress: 0, status: 'ativo', milestones: [
+      { id: 'm1', title: 'Um', completed: true }, { id: 'm2', title: 'Dois', completed: false },
+    ] })
+    expect(projectProgress(state, 'p1')).toBe(50)
+    expect(projectProgress(state, 'missing')).toBe(0)
   })
 
   it('clamps goal progress and treats invalid targets safely', () => {
@@ -31,7 +39,10 @@ describe('weekly statistics', () => {
 
   it('counts consecutive days with meaningful activity', () => {
     const state = createInitialState()
-    state.activities.push({ id: 'today', type: 'focus', title: 'Hoje', date: dayOffset(0), xp: 10, coins: 5, minutes: 10 })
-    expect(currentStreak(state)).toBeGreaterThanOrEqual(4)
+    state.activities.push(
+      { id: 'today', type: 'focus', title: 'Hoje', date: dayOffset(0), xp: 10, coins: 5, minutes: 10 },
+      { id: 'yesterday', type: 'mission', title: 'Ontem', date: dayOffset(-1), xp: 10, coins: 5 },
+    )
+    expect(currentStreak(state)).toBe(2)
   })
 })

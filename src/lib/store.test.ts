@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createInitialState, loadState, localDate, saveState } from './store'
+import { createInitialState, loadState, saveState } from './store'
 
 describe('local persistence and migration', () => {
   const values = new Map<string, string>()
@@ -12,12 +12,15 @@ describe('local persistence and migration', () => {
     })
   })
 
-  it('creates a complete version 2 state', () => {
+  it('starts clean and keeps only the requested morning care reminders', () => {
     const state = createInitialState()
     expect(state.version).toBe(2)
-    expect(state.routine.blocks.length).toBeGreaterThan(0)
-    expect(state.goals.length).toBeGreaterThan(0)
-    expect(state.screenLogs.some((item) => item.date === localDate())).toBe(true)
+    expect(state.projects).toEqual([])
+    expect(state.goals).toEqual([])
+    expect(state.missions).toEqual([])
+    expect(state.activities).toEqual([])
+    expect(state.screenLogs).toEqual([])
+    expect(state.morning.map((item) => item.kind)).toEqual(['routine', 'medication'])
   })
 
   it('persists and reloads user preferences', () => {
@@ -42,11 +45,11 @@ describe('local persistence and migration', () => {
     expect(loaded.settings.displayName).toBe('Alex')
     expect(loaded.projects[0].name).toBe('Projeto antigo')
     expect(loaded.missions[0].completedAt).toBeTruthy()
-    expect(loaded.goals.length).toBeGreaterThan(0)
+    expect(loaded.goals).toEqual([])
   })
 
   it('recovers from malformed storage instead of crashing', () => {
-    values.set('foco-app-v2', '{not-json')
+    values.set('foco-app-v3', '{not-json')
     expect(loadState().version).toBe(2)
   })
 })

@@ -106,6 +106,14 @@ export interface RoutinePlan {
   blocks: RoutineBlock[]
 }
 
+export interface MorningItem {
+  id: string
+  title: string
+  note: string
+  kind: 'routine' | 'medication'
+  completedDates: string[]
+}
+
 export interface AppState {
   version: 2
   coins: number
@@ -116,6 +124,7 @@ export interface AppState {
   projects: Project[]
   goals: Goal[]
   routine: RoutinePlan
+  morning: MorningItem[]
   activities: Activity[]
   screenLogs: ScreenLog[]
   rewards: Reward[]

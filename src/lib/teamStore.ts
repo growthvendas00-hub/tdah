@@ -1,58 +1,43 @@
-import { dayOffset, localDate } from './store'
-import type { HabitLog, HabitPlan, TeamActivity, TeamGoal, TeamProfile, TeamProject, TeamState, TeamTask, Workspace, WorkspaceMember } from '../types/team'
+import { dayOffset } from './store'
+import type { TeamGoal, TeamProfile, TeamProject, TeamState, TeamTask, Workspace, WorkspaceMember } from '../types/team'
 
-const key = 'foco-team-demo-v1'
+const key = 'foco-team-v2'
 const userKey = 'foco-team-demo-user'
 
 const profiles: TeamProfile[] = [
-  { id: 'demo-kondi', displayName: 'Kondi', avatarColor: '#6e9174', workspaceXp: 420, trophies: 7 },
-  { id: 'demo-socio', displayName: 'Sócio', avatarColor: '#8a79a8', workspaceXp: 390, trophies: 6 },
+  { id: 'demo-kondi', displayName: 'Kondi', avatarColor: '#72957a', workspaceXp: 0, trophies: 0 },
+  { id: 'demo-socio', displayName: 'Sócio', avatarColor: '#8b7faf', workspaceXp: 0, trophies: 0 },
 ]
-
-const workspace: Workspace = { id: 'workspace-demo', name: 'Metas Business', description: 'Operação compartilhada de tráfego, ofertas e agência.', inviteCode: 'FOCO-DUPLA', createdBy: 'demo-kondi' }
-const members: WorkspaceMember[] = profiles.map((profile, index) => ({ workspaceId: workspace.id, userId: profile.id, role: index ? 'member' : 'owner', joinedAt: dayOffset(-30) }))
+const workspace: Workspace = { id: 'workspace-demo', name: 'Metas Business', description: 'Metas, operações e execução da dupla.', inviteCode: 'FOCO-DUPLA', createdBy: 'demo-kondi' }
+const members: WorkspaceMember[] = profiles.map((item, index) => ({ workspaceId: workspace.id, userId: item.id, role: index ? 'member' : 'owner', joinedAt: dayOffset(0) }))
 const projects: TeamProject[] = [
-  { id: 'tp1', workspaceId: workspace.id, name: 'Operação VSL', summary: 'Proteger e escalar a oferta principal.', color: '#d4837d', status: 'ativo' },
-  { id: 'tp2', workspaceId: workspace.id, name: 'Agência', summary: 'Atendimento, aquisição e retenção de clientes.', color: '#77a7a4', status: 'ativo' },
-]
-const tasks: TeamTask[] = [
-  { id: 'tt1', workspaceId: workspace.id, projectId: 'tp1', title: 'Subir contingência da página', description: 'Duplicar a página aprovada no domínio reserva e validar checkout.', area: 'sites', assigneeId: 'demo-kondi', status: 'hoje', priority: 'urgente', points: 30, dueDate: localDate(), createdBy: 'demo-socio' },
-  { id: 'tt2', workspaceId: workspace.id, projectId: 'tp1', title: 'Revisar retenção da VSL', description: 'Olhar quedas dos primeiros 8 minutos e anotar três hipóteses.', area: 'vsl', assigneeId: 'demo-socio', status: 'andamento', priority: 'importante', points: 20, dueDate: localDate(), createdBy: 'demo-kondi' },
-  { id: 'tt3', workspaceId: workspace.id, projectId: 'tp2', title: 'Enviar relatório semanal', description: 'Consolidar mídia, criativos e próximos testes do cliente.', area: 'clientes', assigneeId: 'demo-kondi', status: 'revisao', priority: 'importante', points: 20, dueDate: localDate(), createdBy: 'demo-kondi' },
-  { id: 'tt4', workspaceId: workspace.id, projectId: 'tp2', title: 'Confirmar reunião de onboarding', description: 'Enviar pauta e confirmar participantes.', area: 'clientes', assigneeId: 'demo-socio', status: 'concluida', priority: 'normal', points: 10, dueDate: dayOffset(-1), createdBy: 'demo-kondi', completedAt: new Date().toISOString() },
+  { id: 'project-x1', workspaceId: workspace.id, name: 'Operação X1', summary: 'Preparar a operação para receber leads pelo WhatsApp com a integração oficial da Meta.', color: '#7da889', status: 'ativo', priority: 'urgente', sortOrder: 0 },
+  { id: 'project-offers', workspaceId: workspace.id, name: 'Mineração de ofertas', summary: 'Organizar ofertas e criativos para futuros testes no X1.', color: '#c49a6c', status: 'ativo', priority: 'importante', sortOrder: 1 },
 ]
 const goals: TeamGoal[] = [
-  { id: 'tg1', workspaceId: workspace.id, title: 'Estabilizar a operação principal', metric: 'dias sem interrupção', target: 14, current: 6, deadline: dayOffset(20), rewardXp: 120, completed: false },
-  { id: 'tg2', workspaceId: workspace.id, title: 'Entregar relatórios no prazo', metric: 'relatórios', target: 8, current: 5, deadline: dayOffset(14), rewardXp: 80, completed: false },
+  { id: 'goal-whatsapp', workspaceId: workspace.id, projectId: 'project-x1', title: 'Conectar a API do WhatsApp da Meta', description: 'Deixar o número pronto para receber leads na operação X1 usando a integração oficial.', metric: 'etapas', target: 4, current: 0, rewardXp: 120, completed: false, status: 'andamento', priority: 'urgente', sortOrder: 0 },
+  { id: 'goal-offers', workspaceId: workspace.id, projectId: 'project-offers', title: 'Minerar e preparar novas ofertas para X1', description: 'Entender ofertas, separar criativos e organizar o que será testado.', metric: 'etapas', target: 5, current: 0, rewardXp: 90, completed: false, status: 'planejada', priority: 'importante', sortOrder: 1 },
+  { id: 'goal-english', workspaceId: workspace.id, title: 'Aprender inglês', description: '', metric: 'etapas', target: 1, current: 0, rewardXp: 60, completed: false, status: 'planejada', priority: 'normal', sortOrder: 2 },
 ]
-const activities: TeamActivity[] = [
-  { id: 'ta1', workspaceId: workspace.id, userId: 'demo-kondi', title: 'Publicou página de contingência', points: 30, date: dayOffset(-2), type: 'task' },
-  { id: 'ta2', workspaceId: workspace.id, userId: 'demo-socio', title: 'Fechou reunião de onboarding', points: 10, date: dayOffset(-1), type: 'task' },
-  { id: 'ta3', workspaceId: workspace.id, userId: 'demo-kondi', title: 'Entregou relatório de mídia', points: 20, date: localDate(), type: 'task' },
-  { id: 'ta4', workspaceId: workspace.id, userId: 'demo-socio', title: 'Criou novos ângulos de campanha', points: 20, date: localDate(), type: 'task' },
-]
-const habitPlans: HabitPlan[] = profiles.flatMap((profile) => [
-  { id: `hp-${profile.id}-tabaco`, userId: profile.id, kind: 'tabaco', mode: 'reduzir', baseline: 10, target: 6, unit: 'cigarros/dia', shareWithWorkspace: profile.id === 'demo-kondi', workspaceId: workspace.id, startedAt: dayOffset(-7) },
-  { id: `hp-${profile.id}-cannabis`, userId: profile.id, kind: 'cannabis', mode: 'reduzir', baseline: 3, target: 2, unit: 'sessões/semana', shareWithWorkspace: false, startedAt: dayOffset(-7) },
-])
-const habitLogs: HabitLog[] = [
-  { id: 'hl1', planId: 'hp-demo-kondi-tabaco', userId: 'demo-kondi', date: dayOffset(-2), amount: 9 },
-  { id: 'hl2', planId: 'hp-demo-kondi-tabaco', userId: 'demo-kondi', date: dayOffset(-1), amount: 8 },
-  { id: 'hl3', planId: 'hp-demo-kondi-tabaco', userId: 'demo-kondi', date: localDate(), amount: 6 },
+const baseTask = { workspaceId: workspace.id, description: '', area: 'operacao' as const, assigneeId: undefined, status: 'backlog' as const, priority: 'importante' as const, points: 20, dueDate: undefined, createdBy: 'demo-kondi', completedAt: undefined }
+const tasks: TeamTask[] = [
+  { ...baseTask, id: 'task-bm-wait', projectId: 'project-x1', goalId: 'goal-whatsapp', title: 'Deixar a BM parada em um perfil por 1 dia', priority: 'urgente', points: 30, status: 'hoje', sortOrder: 0 },
+  { ...baseTask, id: 'task-number', projectId: 'project-x1', goalId: 'goal-whatsapp', dependsOnTaskId: 'task-bm-wait', title: 'Conectar o número', sortOrder: 1 },
+  { ...baseTask, id: 'task-api', projectId: 'project-x1', goalId: 'goal-whatsapp', dependsOnTaskId: 'task-number', title: 'Conectar a API do WhatsApp da Meta', sortOrder: 2 },
+  { ...baseTask, id: 'task-run-x1', projectId: 'project-x1', goalId: 'goal-whatsapp', dependsOnTaskId: 'task-api', title: 'Rodar a operação X1 recebendo leads', sortOrder: 3 },
+  { ...baseTask, id: 'task-study-x1', projectId: 'project-x1', goalId: 'goal-whatsapp', title: 'Estudar X1 no WhatsApp com a API da Meta', area: 'estudo', priority: 'normal', points: 10, sortOrder: 4 },
+  { ...baseTask, id: 'task-networking', projectId: 'project-x1', goalId: 'goal-whatsapp', title: 'Trocar networking sobre X1 e WhatsApp', area: 'estudo', priority: 'normal', points: 10, sortOrder: 5 },
+  { ...baseTask, id: 'task-mine', projectId: 'project-offers', goalId: 'goal-offers', title: 'Minerar outras ofertas', sortOrder: 0 },
+  { ...baseTask, id: 'task-understand', projectId: 'project-offers', goalId: 'goal-offers', dependsOnTaskId: 'task-mine', title: 'Entender as ofertas selecionadas', sortOrder: 1 },
+  { ...baseTask, id: 'task-creatives-get', projectId: 'project-offers', goalId: 'goal-offers', dependsOnTaskId: 'task-understand', title: 'Separar os criativos', sortOrder: 2 },
+  { ...baseTask, id: 'task-creatives-organize', projectId: 'project-offers', goalId: 'goal-offers', dependsOnTaskId: 'task-creatives-get', title: 'Organizar os criativos', sortOrder: 3 },
+  { ...baseTask, id: 'task-tests', projectId: 'project-offers', goalId: 'goal-offers', dependsOnTaskId: 'task-creatives-organize', title: 'Preparar ofertas para subir e testar no X1', sortOrder: 4 },
 ]
 
 export function createDemoTeamState(): TeamState {
   const selected = localStorage.getItem(userKey) ?? profiles[0].id
-  return { mode: 'demo', configured: false, loading: false, error: '', user: profiles.find((item) => item.id === selected) ?? profiles[0], profiles, workspaces: [workspace], activeWorkspaceId: workspace.id, members, projects, tasks, goals, activities, habitPlans, habitLogs }
+  return { mode: 'demo', configured: false, loading: false, error: '', user: profiles.find((item) => item.id === selected) ?? profiles[0], profiles, workspaces: [workspace], activeWorkspaceId: workspace.id, members, projects, tasks, subtasks: [], goals, ideas: [], activities: [], habitPlans: [], habitLogs: [] }
 }
-
-export function loadDemoTeamState() {
-  try { const value = localStorage.getItem(key); if (value) return { ...createDemoTeamState(), ...JSON.parse(value) } as TeamState } catch { /* fresh demo */ }
-  return createDemoTeamState()
-}
-
-export function saveDemoTeamState(state: TeamState) {
-  localStorage.setItem(key, JSON.stringify({ ...state, loading: false, error: '' }))
-}
-
+export function loadDemoTeamState() { try { const value = localStorage.getItem(key); if (value) return { ...createDemoTeamState(), ...JSON.parse(value) } as TeamState } catch { /* fresh state */ } return createDemoTeamState() }
+export function saveDemoTeamState(state: TeamState) { localStorage.setItem(key, JSON.stringify({ ...state, loading: false, error: '' })) }
 export function saveDemoUser(userId: string) { localStorage.setItem(userKey, userId) }

@@ -1,4 +1,4 @@
-import { ArrowRight, BatteryFull, BatteryLow, BatteryMedium, Check, Clock3, Coins, Crosshair, MonitorSmartphone, Plus, Sparkles, Target, TimerReset, Zap } from 'lucide-react'
+import { ArrowRight, BatteryFull, BatteryLow, BatteryMedium, Check, CheckCircle2, Clock3, Coins, Crosshair, HeartPulse, MonitorSmartphone, Plus, Sparkles, Target, TimerReset, Zap } from 'lucide-react'
 import { localDate } from '../lib/store'
 import { clampProgress, currentStreak, todayActivities } from '../lib/stats'
 import type { FocoActions } from '../hooks/useFocoState'
@@ -30,6 +30,12 @@ export function TodayPage({ state, missions, actions, complete, openMission, nav
         <span>Energia agora</span>
         <div>{(Object.keys(energy) as Energy[]).map((value) => { const Icon = energy[value].icon; return <button key={value} className={state.energy === value ? 'selected' : ''} onClick={() => actions.setEnergy(value)}><Icon size={17} />{energy[value].label}</button> })}</div>
       </div>
+    </section>
+
+    <section className="morning-checkin surface">
+      <div className="section-title compact"><div><p className="eyebrow">COMEÇO DA MANHÃ</p><h2>Dois lembretes, sem pontuação</h2></div><HeartPulse size={21} /></div>
+      <p>Cuidados pessoais não entram no ranking nem geram moedas.</p>
+      <div>{state.morning.map((item) => { const done = item.completedDates.includes(localDate()); return <button key={item.id} className={done ? 'done' : ''} onClick={() => actions.toggleMorningItem(item.id)}><span>{done ? <CheckCircle2 size={19} /> : <i />}</span><div><strong>{item.title}</strong><small>{item.note}</small></div></button> })}</div>
     </section>
 
     <section className="next-step-card">

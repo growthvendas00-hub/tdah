@@ -1,36 +1,36 @@
-# Guia técnico e funcional — Foco
+# Guia do projeto — Foco
 
-> Mapa completo da versão atual. Explica produto, regras, dados, segurança, arquivos, deploy e direção sem exigir leitura prévia do código.
+> Mapa funcional e técnico da versão atual. A leitura deste arquivo é suficiente para entender o produto, os dados, as regras, a segurança e o deploy.
 
-## 1. Produto
+## 1. O que é
 
-O Foco é um organizador pessoal e colaborativo para pessoas com TDAH. Ele reduz a fricção de começar, torna o trabalho visível e devolve feedback com XP, moedas, níveis, troféus e recompensas.
+O Foco é um organizador pessoal e colaborativo para pessoas com TDAH. Ele transforma objetivos em próximos passos visíveis e usa XP, moedas, níveis, troféus e recompensas como retorno positivo.
 
-Princípios: poucos próximos passos; tempo externalizado; definição clara de pronto; retorno sem punição; vida pessoal separada do negócio; competição leve; saúde sem diagnóstico ou vigilância.
+Princípios: pouca fricção; prioridades explícitas; tarefas pequenas; tempo visível; retorno sem punição; privacidade pessoal; competição leve; saúde sem prescrição, diagnóstico ou ranking.
 
-## 2. Dois espaços
+## 2. Os dois espaços
 
-**Meu espaço** é individual: dia, semana, energia, tela, rotina, projetos, objetivos, recompensas, configurações e hábitos privados.
+**Meu espaço** é local e privado: hoje, semana, tela, energia, rotina, projetos pessoais, objetivos, recompensas e configurações.
 
-**Metas Business** é compartilhado: quadro, projetos, objetivos, responsáveis, prazos, perfis, troféus e ranking. Não usa energia pessoal. Áreas: tráfego, sites, campanhas, clientes, VSL, operação e geral.
+**Metas Business** é compartilhado: operações, metas, tarefas, subtarefas, ideias, responsáveis, prazos, perfis, XP, troféus e ranking. Energia, medicação e vida pessoal não aparecem nele.
 
 ## 3. Arquitetura
 
 ```text
-React UI
-  -> useFocoState -> AppState pessoal -> localStorage
-  -> useTeamState
-       -> modo demo -> localStorage
-       -> modo cloud -> Supabase Auth + PostgreSQL + RLS + Realtime
+React SPA
+├─ useFocoState → estado pessoal → localStorage
+└─ useTeamState
+   ├─ demonstração → localStorage
+   └─ nuvem → Supabase Auth + PostgreSQL + RLS + Realtime
 ```
 
-É uma SPA sem React Router. `App.tsx` troca módulos dentro do mesmo shell.
+O sistema não troca de site ao navegar. `App.tsx` alterna módulos dentro do mesmo shell.
 
-Sem variáveis Supabase, dois jogadores simulados permitem testar tudo localmente. Com Supabase, cada pessoa possui conta e workspaces sincronizam entre aparelhos.
+Sem Supabase, a demonstração local simula Kondi e Sócio. Com Supabase, cada pessoa usa sua conta e os dados do workspace sincronizam entre aparelhos.
 
 ## 4. Stack e comandos
 
-React 19, TypeScript, Vite, CSS puro, Lucide, Supabase JS, PostgreSQL/RLS, Vitest, ESLint, Vercel. Node: `>=20 <25`.
+React 19, TypeScript, Vite, CSS, Lucide, Supabase JS, PostgreSQL/RLS, Vitest, ESLint, Vercel. Node `>=20 <25`.
 
 ```bash
 npm ci
@@ -38,211 +38,219 @@ npm run dev
 npm test
 npm run lint
 npm run build
-npm run preview
+npm audit
 ```
 
-## 5. Inicialização
+## 5. Inicialização e armazenamento
 
-1. `index.html` cria `#root`; `main.tsx` monta `<App />`.
-2. `useFocoState()` carrega `foco-app-v2` ou migra `foco-app-v1`.
-3. `useTeamState()` detecta as variáveis Supabase.
-4. Sem configuração, carrega `foco-team-demo-v1`.
-5. Com configuração, recupera sessão e consulta somente dados liberados por RLS.
-6. Mudanças pessoais salvam automaticamente; mudanças cloud vão ao PostgreSQL.
-7. Tarefas e atividades do workspace atualizam por Realtime.
+1. `main.tsx` monta `App` em `#root`.
+2. `useFocoState` carrega `foco-app-v3`; o estado novo não contém histórico falso.
+3. `useTeamState` verifica as variáveis Supabase.
+4. Sem variáveis, carrega `foco-team-v2` com a demonstração solicitada.
+5. Com variáveis, recupera a sessão e consulta somente workspaces permitidos pela RLS.
+6. Estado pessoal salva automaticamente no navegador.
+7. Estado colaborativo salva no PostgreSQL e atualiza por Realtime.
 
-## 6. Navegação
+As chaves antigas não são carregadas, portanto os exemplos fictícios anteriores não reaparecem.
 
-- `hoje`: painel diário pessoal;
-- `semana`: métricas e histórico pessoal;
+## 6. Navegação principal
+
+- `hoje`: próximos passos, manhã, foco, tela e rotina;
+- `semana`: gráfico e histórico dos últimos sete dias;
 - `planejamento`: rotina, projetos e objetivos pessoais;
-- `equipe`: Metas Business;
-- `habitos`: redução de tabaco/cannabis;
+- `equipe`: workspace Metas Business;
+- `habitos`: registro privado de redução de tabaco/cannabis;
 - `recompensas`: loja pessoal;
-- `conta`: login, cadastro, perfil ou simulação;
-- `configuracoes`: preferências pessoais.
+- `conta`: cadastro, login, perfil ou troca do jogador demo;
+- `configuracoes`: preferências e restauração local.
 
-`Navigation.tsx` contém sidebar, cabeçalho, nível, moedas, conta e menu mobile. Busca abre por botão ou `Ctrl/Cmd + K`; `Escape` fecha diálogos.
+A sidebar e o menu mobile ficam em `Navigation.tsx`. `Ctrl/Cmd + K` abre busca e `Escape` fecha diálogos pessoais.
 
-## 7. Fluxos pessoais
+## 7. Meu dia
 
-Meu dia filtra missões pela data. O próximo passo combina energia atual e depois prioridade `essencial`, `importante`, `extra`. Mostra progresso, foco, tela manual, rotina e objetivos.
+As missões são filtradas pela data e ordenadas por compatibilidade com energia e prioridade. Ao concluir, o sistema registra atividade, XP e moedas uma vez.
 
-Minha semana agrega hoje e seis dias anteriores: missões, foco, XP, tela, sequência, atividades e conquistas. Tela não conta para sequência.
+O começo da manhã possui dois check-ins sem pontuação:
 
-Planejamento:
+- Acordar cedo;
+- Venvanse conforme prescrição.
 
-- Rotina: intenção, horários, blocos e técnica;
-- Projetos: motivo, prazo, marcos e progresso;
-- Objetivos: área, unidade, alvo, prazo e prêmio.
+O segundo é apenas lembrete privado. O sistema não informa dose, não recomenda horário, não concede moeda e não envia o dado ao workspace.
 
-Técnicas: Sprint gentil 15/5, Pomodoro 25/5, Blocos flexíveis 45/15 e Primeiro passo 2 min.
+Tela é registrada manualmente. O limite é referência sem punição. Foco pode ser registrado em blocos de 25 minutos.
 
-## 8. Metas Business
+## 8. Planejamento pessoal
 
-Abas:
+**Rotina:** intenção, começo/fim do dia, blocos, dias e técnica de foco.
 
-- Visão geral: entregas, urgências, jogadores e objetivos;
-- Quadro: backlog, hoje, andamento, revisão e concluídas;
-- Projetos: frentes e objetivos do negócio;
-- Ranking: XP de hoje ou sete dias;
-- Equipe: perfil, nível, troféus, entregas e convite.
+**Projetos:** motivo, prazo, marcos concretos e progresso calculado pelos marcos.
 
-Conexão:
+**Objetivos:** motivo, área, unidade, alvo, prazo e prêmio.
 
-1. Cada sócio cria conta.
+Técnicas disponíveis: Sprint gentil 15/5, Pomodoro 25/5, Blocos flexíveis 45/15 e Primeiro passo de dois minutos.
+
+O estado pessoal começa vazio, exceto preferências, catálogo de recompensas e os dois check-ins pedidos. O usuário cria os próprios dados.
+
+## 9. Modelo compartilhado
+
+```text
+Workspace
+├─ membros e perfis
+├─ operações
+│  └─ metas priorizadas
+│     └─ tarefas ordenadas
+│        └─ subtarefas
+├─ ideias
+└─ atividades → ranking e perfil
+```
+
+**Operação** é uma frente de trabalho. Possui nome, descrição, cor, prioridade, estado e ordem.
+
+**Meta** é um resultado. Possui descrição, prioridade, status, operação, dependência, responsável, prazo, bônus e ordem.
+
+**Tarefa** é um passo verificável. Possui meta, operação, dependência, responsável, área, status, prioridade, prazo, descrição de pronto e ordem.
+
+**Subtarefa** é um checklist interno sem prêmio separado.
+
+**Ideia** começa na caixa de entrada e pode ficar em avaliação, aprovada ou arquivada. Ideia não vira prioridade automaticamente.
+
+## 10. Abas do Metas Business
+
+- **Metas:** lista por prioridade e painel detalhado sem sair da tela;
+- **Quadro:** caixa de entrada, hoje, andamento, revisão e concluídas;
+- **Operações:** visão das frentes, metas, tarefas e progresso;
+- **Ideias:** captura e triagem;
+- **Ranking:** XP diário ou semanal;
+- **Equipe:** convite, perfil, nível, troféus e entregas.
+
+Meta, tarefa, operação e ideia podem ser criadas, editadas, renomeadas e excluídas. Exclusões pedem confirmação. Excluir operação mantém metas/tarefas sem vínculo; excluir meta remove suas tarefas e subtarefas.
+
+## 11. Dados iniciais do workspace demo
+
+Somente informações fornecidas pelos usuários:
+
+- Operação X1;
+- meta “Conectar a API do WhatsApp da Meta”;
+- espera de um dia, conexão do número, conexão da API e operação recebendo leads;
+- estudo de X1/API da Meta e networking;
+- Mineração de ofertas;
+- entender ofertas, separar/organizar criativos e preparar testes;
+- objetivo “Aprender inglês”.
+
+A integração é descrita como uso oficial para receber leads. O sistema não executa disparos e não contém fluxo para contornar bloqueios.
+
+Ideias, atividades, hábitos, XP e troféus começam vazios/zerados.
+
+## 12. Gamificação compartilhada
+
+- tarefa normal: 10 XP;
+- tarefa alta/importante: 20 XP;
+- tarefa de foco principal/urgente: 30 XP e um troféu;
+- meta completa: XP configurado e um troféu;
+- nível: `floor(XP / 100) + 1`;
+- ranking: soma atividades de hoje ou sete dias.
+
+Pontos são calculados no banco, não aceitos do navegador. Cada tarefa usa uma chave única de premiação; reabrir e concluir novamente não duplica XP. A meta também possui uma chave única de bônus.
+
+O progresso da meta é derivado das tarefas. Mover tarefa entre metas recalcula a meta antiga e a nova. Subtarefas, ideias, saúde e medicação não pontuam.
+
+## 13. Colaboração
+
+1. Cada sócio cria sua conta.
 2. Um cria o workspace.
 3. Compartilha o código de oito caracteres.
 4. O outro entra como `member`.
-5. Ambos criam/editam projetos, tarefas e objetivos.
+5. Ambos visualizam e editam o workspace.
 
-Tarefa possui área, responsável, projeto, prioridade, prazo e definição de pronto. Responsável e projeto devem pertencer ao workspace.
+No modo demo, a conta permite alternar Kondi/Sócio no mesmo navegador. Isso é simulação, não sincronização real.
 
-XP é calculado no banco: normal 10, importante 20, urgente 30. Urgente também concede um troféu. Concluir credita o responsável e cria atividade atomicamente. Reabrir não remove prêmio; uma conclusão já registrada não duplica.
-
-Objetivo avança por unidade. O avanço final credita o jogador com o XP configurado e um troféu.
-
-Ranking celebra entregas do período e não mede valor pessoal.
-
-## 9. Hábitos e redução
-
-Cada usuário acompanha tabaco e cannabis com referência, alvo, unidade, estratégia `reduzir/parar` e registros por data.
-
-- privado por padrão;
-- só o dono altera plano/logs;
-- compartilhamento é opt-in;
-- o sócio vê somente o plano compartilhado;
-- ranking nunca usa saúde;
-- aumento não gera punição;
-- o sistema não orienta dose ou mudança de Venvanse.
-
-A tela aponta para materiais do INCA e rede de saúde mental do SUS. O recurso é registro e incentivo, não tratamento médico.
-
-## 10. Estado pessoal
-
-| Entidade | Função |
-|---|---|
-| `Mission` | tarefa datada, energia, prioridade e prêmio |
-| `Project` / `Milestone` | projeto e entregas |
-| `Goal` | objetivo mensurável |
-| `RoutinePlan` / `RoutineBlock` | técnica, horários e conclusão |
-| `Activity` | histórico de XP/moedas/minutos |
-| `ScreenLog` | tela manual por data |
-| `Reward` | compra, propriedade e equipamento |
-| `SettingsData` | nome, tema, movimento e preferências |
-
-## 11. Banco colaborativo
+## 14. Banco de dados
 
 | Tabela | Função |
 |---|---|
 | `profiles` | nome, cor, XP e troféus |
-| `workspaces` | espaço e código |
-| `workspace_members` | tenant, usuário e papel |
-| `workspace_projects` | frentes do negócio |
-| `workspace_tasks` | quadro operacional |
-| `workspace_goals` | objetivos comuns |
-| `workspace_activities` | histórico/ranking |
-| `habit_plans` | estratégia individual |
-| `habit_logs` | registros diários |
+| `workspaces` | espaço e código de convite |
+| `workspace_members` | usuário, tenant e papel |
+| `workspace_projects` | operações |
+| `workspace_goals` | metas e dependências |
+| `workspace_tasks` | tarefas, ordem e dependências |
+| `workspace_subtasks` | checklist da tarefa |
+| `workspace_ideas` | caixa de ideias |
+| `workspace_activities` | histórico idempotente e ranking |
+| `habit_plans` | plano privado de redução |
+| `habit_logs` | registros diários privados |
 
-Índices cobrem membros, quadro, responsáveis, ranking, projetos, objetivos e hábitos.
+Aplicar as migrations em ordem:
 
-## 12. Segurança
+1. `202607290001_collaboration.sql` — base, Auth, RLS e gamificação;
+2. `202607310001_goals_first.sql` — metas completas, CRUD, subtarefas, ideias e bônus idempotente.
 
-RLS está ativa em todas as tabelas:
+## 15. Segurança
 
-- perfil visível ao dono ou membro do mesmo workspace;
-- workspace somente para membros; estrutura somente owner;
-- projetos, tarefas e objetivos limitados ao tenant;
-- `workspace_id` e `created_by` de tarefa não mudam;
-- pontos, XP e troféus não são editáveis pelo cliente;
-- código de convite concede somente `member`;
-- hábitos são do dono ou compartilhados voluntariamente;
-- `service_role` nunca vai ao navegador.
+RLS está ativa em todas as tabelas colaborativas:
 
-Funções: `is_workspace_member`, `is_workspace_owner`, `shares_workspace`, `join_workspace_by_code`, `advance_workspace_goal`.
+- somente membros leem o workspace;
+- relações são validadas no mesmo workspace;
+- responsáveis precisam ser membros;
+- `workspace_id` e autor não podem ser trocados pela tarefa;
+- pontos, XP, troféus e bônus são processados por gatilhos;
+- a função interna de recálculo não pode ser chamada por clientes;
+- o antigo avanço manual de meta não pode ser executado;
+- hábitos são privados por padrão e compartilhados apenas por opt-in;
+- `service_role` nunca vai para o navegador.
 
-Triggers criam perfil, adicionam owner, validam escopo e creditam tarefas.
+Erros do Supabase interrompem o formulário e aparecem na tela; a UI não confirma sucesso falso.
 
-## 13. Gamificação pessoal
-
-- missão: moedas `max(10, round(min × 1,5))`; XP = moedas + 10;
-- marco: 20 XP + 10 moedas;
-- objetivo: 10 XP + 5 moedas; final 80 XP + prêmio;
-- rotina: 15 XP + 8 moedas;
-- foco: XP `max(10, round(min × 0,8))`; moedas `max(5, round(min × 0,4))`;
-- nível: `floor(XP / 100) + 1`;
-- compras consumíveis cobram por uso; permanentes uma vez.
-
-## 14. Datas e estatísticas
-
-`localDate()` ajusta fuso antes de `YYYY-MM-DD`. `getWeekStats()` agrega sete dias. `WeekChart` suporta missões, foco e tela.
-
-`workspaceRanking()` soma atividades de 1/7 dias. `pointsForPriority()` centraliza pontos. `habitAverage()` ignora dias sem registro.
-
-## 15. Mapa de arquivos
+## 16. Mapa de arquivos
 
 ```text
 /
-├─ .env.example                       variáveis públicas
-├─ supabase/migrations/...sql         schema, funções, triggers e RLS
-├─ index.html / vite.config.ts         entrada e build
-├─ vercel.json / package*.json         deploy e dependências
-├─ projectguia.md / README.md          documentação
+├─ .env.example                  variáveis públicas
+├─ supabase/migrations/          schema, funções, triggers e RLS
+├─ projectguia.md / README.md    documentação
+├─ vercel.json / vite.config.ts  deploy e build
 └─ src/
-   ├─ main.tsx / App.tsx / styles.css  shell, rotas internas e UI
-   ├─ types.ts / types/team.ts          contratos pessoal/equipe
-   ├─ hooks/
-   │  ├─ useFocoState.ts               regras pessoais
-   │  └─ useTeamState.ts               auth, demo, cloud e colaboração
-   ├─ lib/
-   │  ├─ store.ts / stats.ts           storage/estatísticas pessoais
-   │  ├─ supabase.ts / teamStore.ts    cliente e demo
-   │  ├─ teamStats.ts                  ranking, pontos e hábitos
-   │  └─ *.test.ts                     testes
-   ├─ components/                      navegação, diálogos e gráfico
-   └─ pages/
-      ├─ Today/Week/Planning           pessoal
-      ├─ TeamPage.tsx                  workspace
-      ├─ HabitsPage.tsx                redução e privacidade
-      ├─ AccountPage.tsx               conta/configuração
-      └─ Rewards/Settings              loja/preferências
+   ├─ App.tsx / styles.css       shell e interface
+   ├─ types.ts                   contratos pessoais
+   ├─ types/team.ts              contratos colaborativos
+   ├─ hooks/useFocoState.ts      regras pessoais
+   ├─ hooks/useTeamState.ts      auth, CRUD, demo, cloud e realtime
+   ├─ lib/store.ts               estado pessoal inicial/persistência
+   ├─ lib/teamStore.ts           workspace demo solicitado
+   ├─ lib/stats.ts               semana, progresso e sequência
+   ├─ lib/teamStats.ts           pontos, ranking e hábitos
+   ├─ lib/*.test.ts              testes automatizados
+   ├─ components/                navegação, diálogos e gráfico
+   └─ pages/                     hoje, semana, planejamento, equipe etc.
 ```
 
-## 16. Supabase e Vercel
+## 17. Supabase e Vercel
 
-1. Criar projeto Supabase.
-2. Executar a migration no SQL Editor.
-3. Cadastrar na Vercel:
-   - `VITE_SUPABASE_URL`;
-   - `VITE_SUPABASE_ANON_KEY`.
-4. Fazer deploy.
-5. Criar duas contas, workspace e testar convite.
+1. Criar projeto no Supabase.
+2. Rodar as duas migrations no SQL Editor, na ordem acima.
+3. Na Vercel, cadastrar `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
+4. Não cadastrar `service_role`.
+5. Fazer deploy e criar as duas contas.
+6. Criar/entrar no workspace com o código e testar em dois navegadores.
 
-Nunca cadastrar `service_role` no frontend.
+## 18. Verificação da versão
 
-## 17. Testes e limites
+Executar:
 
-Executar `npm test`, `npm run lint`, `npm run build` e `npm audit`.
+```bash
+npm test
+npm run lint
+npm run build
+npm audit --audit-level=high
+```
 
-Testar conta, convite, tarefa/responsável, conclusão, ranking, projeto, objetivo, troca de jogador, hábito privado/compartilhado, recarga e mobile.
+Fluxos mínimos: dados iniciais; abrir meta; dependência; CRUD de meta/tarefa/operação/ideia/subtarefa; conclusão sem bônus duplicado; ranking; troca de jogador; convite cloud; isolamento entre workspaces; recarga; desktop e mobile.
 
-Limites:
+Limites atuais: painel pessoal permanece local; convite é por código; não há anexos, comentários, calendário externo, timer contínuo ou notificações do sistema; teste Supabase exige um projeto externo; a automação visual depende do navegador local conseguir anexar a aba.
 
-- cloud depende de projeto Supabase externo;
-- painel pessoal ainda fica local;
-- convite é por código, não e-mail;
-- edição/exclusão completa não existe em todos os módulos;
-- Realtime cobre tarefas/atividades; demais dados recarregam após ação;
-- não há timer, calendário ou notificações do sistema;
-- não há E2E automatizado nem Supabase de teste no repositório.
+## 19. Caminho do produto
 
-## 18. Próximo caminho
-
-1. Configurar Supabase real e validar isolamento com duas contas.
-2. Sincronizar opcionalmente o painel pessoal.
-3. Adicionar edição/exclusão, comentários, anexos e auditoria.
-4. Criar timer, notificações opt-in e calendário.
-5. Evoluir relatórios e sugestões explicáveis.
-
-A superfície deve continuar simples: o painel individual ajuda cada pessoa; o workspace torna o negócio palpável; a gamificação incentiva ação sem virar cobrança ou vigilância.
+1. Aplicar migrations e validar RLS com duas contas reais.
+2. Usar o fluxo de metas por alguns dias e observar fricções reais.
+3. Só então priorizar calendário, comentários, anexos ou sincronização pessoal.
+4. Manter o princípio: meta clara, próximo passo pequeno e recompensa sem cobrança.

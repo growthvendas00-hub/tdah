@@ -92,6 +92,10 @@ export function useFocoState() {
     })
   }
 
+  function toggleMorningItem(itemId: string) {
+    setState((current) => ({ ...current, morning: current.morning.map((item) => item.id === itemId ? { ...item, completedDates: item.completedDates.includes(today) ? item.completedDates.filter((date) => date !== today) : [...item.completedDates, today] } : item) }))
+  }
+
   function setTechnique(technique: TechniqueId) { setState((current) => ({ ...current, routine: { ...current.routine, technique } })) }
   function updateRoutine(values: Partial<Pick<AppState['routine'], 'wakeTime' | 'sleepTime' | 'intention'>>) { setState((current) => ({ ...current, routine: { ...current.routine, ...values } })) }
 
@@ -125,7 +129,7 @@ export function useFocoState() {
   function setEnergy(energy: Energy) { setState((current) => ({ ...current, energy })) }
   function resetAll() { clearState(); setState(createInitialState()) }
 
-  return { state, todayMissions, actions: { completeMission, addMission, addProject, addMilestone, toggleMilestone, addGoal, advanceGoal, addRoutineBlock, toggleRoutineBlock, setTechnique, updateRoutine, recordFocus, addScreenMinutes, useReward, updateSettings, setEnergy, resetAll } }
+  return { state, todayMissions, actions: { completeMission, addMission, addProject, addMilestone, toggleMilestone, addGoal, advanceGoal, addRoutineBlock, toggleRoutineBlock, toggleMorningItem, setTechnique, updateRoutine, recordFocus, addScreenMinutes, useReward, updateSettings, setEnergy, resetAll } }
 }
 
 export type FocoActions = ReturnType<typeof useFocoState>['actions']
