@@ -22,6 +22,7 @@ function App() {
   const [view, setView] = useState<View>('hoje')
   const [planningTab, setPlanningTab] = useState<PlanningTab>('rotina')
   const [dialog, setDialog] = useState<Dialog>(null)
+  const [missionGoalId, setMissionGoalId] = useState<string | undefined>()
   const [milestoneProjectId, setMilestoneProjectId] = useState<string | null>(null)
   const [celebration, setCelebration] = useState<Mission | null>(null)
   const [toast, setToast] = useState('')
@@ -45,16 +46,16 @@ function App() {
   return <div className={`app-shell theme-${state.settings.activeTheme} ${state.settings.reducedMotion ? 'reduce-motion' : ''}`}>
     <Navigation state={state} teamState={team.state} view={view} mobileOpen={mobileMenu} navigate={navigate} closeMobile={() => setMobileMenu(false)} openMobile={() => setMobileMenu(true)} openSearch={() => setDialog('search')} />
     <main className="main-content">
-      {view === 'hoje' && <TodayPage state={state} missions={todayMissions} actions={actions} complete={complete} openMission={() => setDialog('mission')} navigate={navigate} openPlanning={openPlanning} />}
+      {view === 'hoje' && <TodayPage state={state} missions={todayMissions} actions={actions} complete={complete} openMission={() => { setMissionGoalId(undefined); setDialog('mission') }} navigate={navigate} openPlanning={openPlanning} />}
       {view === 'semana' && <WeekPage state={state} />}
-      {view === 'planejamento' && <PlanningPage state={state} actions={actions} tab={planningTab} setTab={setPlanningTab} openRoutine={() => setDialog('routine')} openProject={() => setDialog('project')} openGoal={() => setDialog('goal')} openMilestone={setMilestoneProjectId} />}
+      {view === 'planejamento' && <PlanningPage state={state} actions={actions} tab={planningTab} setTab={setPlanningTab} openRoutine={() => setDialog('routine')} openProject={() => setDialog('project')} openGoal={() => setDialog('goal')} openMission={(goalId) => { setMissionGoalId(goalId); setDialog('mission') }} openMilestone={setMilestoneProjectId} notify={notify} />}
       {view === 'equipe' && <TeamPage state={team.state} actions={team.actions} openAccount={() => navigate('conta')} notify={notify} />}
       {view === 'habitos' && <HabitsPage state={team.state} actions={team.actions} openAccount={() => navigate('conta')} notify={notify} />}
       {view === 'recompensas' && <RewardsPage state={state} actions={actions} notify={notify} />}
       {view === 'conta' && <AccountPage state={team.state} session={team.session} actions={team.actions} notify={notify} />}
       {view === 'configuracoes' && <SettingsPage state={state} actions={actions} notify={notify} />}
     </main>
-    {dialog === 'mission' && <MissionDialog state={state} actions={actions} close={() => setDialog(null)} notify={notify} />}
+    {dialog === 'mission' && <MissionDialog state={state} actions={actions} initialGoalId={missionGoalId} close={() => setDialog(null)} notify={notify} />}
     {dialog === 'project' && <ProjectDialog actions={actions} close={() => setDialog(null)} notify={notify} />}
     {dialog === 'goal' && <GoalDialog actions={actions} close={() => setDialog(null)} notify={notify} />}
     {dialog === 'routine' && <RoutineDialog actions={actions} close={() => setDialog(null)} notify={notify} />}

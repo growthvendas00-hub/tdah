@@ -19,5 +19,5 @@ export function WeekPage({ state }: { state: AppState }) {
   </div>
 }
 
-function labelFor(type: AppState['activities'][number]['type']) { return ({ mission: 'missão', goal: 'objetivo', routine: 'rotina', focus: 'foco', reward: 'recompensa', screen: 'tela' } as const)[type] }
+function labelFor(type: AppState['activities'][number]['type']) { return ({ mission: 'missão', goal: 'objetivo', routine: 'rotina', focus: 'foco', reward: 'recompensa', screen: 'tela', status: 'mudança de status' } as const)[type] }
 function Achievement({ icon, title, text, active }: { icon: React.ReactNode; title: string; text: string; active: boolean }) { return <article className={`achievement ${active ? 'unlocked' : ''}`}><span>{icon}</span><div><strong>{title}</strong><small>{text}</small></div>{active && <CheckCircle2 size={17} />}</article> }

@@ -36,7 +36,7 @@ const tasks: TeamTask[] = [
 
 export function createDemoTeamState(): TeamState {
   const selected = localStorage.getItem(userKey) ?? profiles[0].id
-  return { mode: 'demo', configured: false, loading: false, error: '', user: profiles.find((item) => item.id === selected) ?? profiles[0], profiles, workspaces: [workspace], activeWorkspaceId: workspace.id, members, projects, tasks, subtasks: [], goals, ideas: [], activities: [], habitPlans: [], habitLogs: [] }
+  return { mode: 'demo', configured: false, loading: false, error: '', user: profiles.find((item) => item.id === selected) ?? profiles[0], profiles, workspaces: [workspace], activeWorkspaceId: workspace.id, members, projects, tasks, subtasks: [], goals, ideas: [], mindNodes: [], activities: [], habitPlans: [], habitLogs: [] }
 }
 export function loadDemoTeamState() { try { const value = localStorage.getItem(key); if (value) return { ...createDemoTeamState(), ...JSON.parse(value) } as TeamState } catch { /* fresh state */ } return createDemoTeamState() }
 export function saveDemoTeamState(state: TeamState) { localStorage.setItem(key, JSON.stringify({ ...state, loading: false, error: '' })) }

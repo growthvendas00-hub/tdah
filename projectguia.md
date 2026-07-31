@@ -10,9 +10,9 @@ Princípios: pouca fricção; prioridades explícitas; tarefas pequenas; tempo v
 
 ## 2. Os dois espaços
 
-**Meu espaço** é local e privado: hoje, semana, tela, energia, rotina, projetos pessoais, objetivos, recompensas e configurações.
+**Meu espaço** é local e privado: hoje, anotações diárias, semana, tela, energia, rotina, projetos pessoais, metas com tarefas/mapa mental, recompensas e configurações.
 
-**Metas Business** é compartilhado: operações, metas, tarefas, subtarefas, ideias, responsáveis, prazos, perfis, XP, troféus e ranking. Energia, medicação e vida pessoal não aparecem nele.
+**Metas Business** é compartilhado: operações, metas, tarefas, espera programada, subtarefas, mapas mentais, histórico, ideias, responsáveis, prazos, perfis, XP, troféus e ranking. Energia, medicação e vida pessoal não aparecem nele.
 
 ## 3. Arquitetura
 
@@ -77,7 +77,7 @@ O começo da manhã possui dois check-ins sem pontuação:
 
 O segundo é apenas lembrete privado. O sistema não informa dose, não recomenda horário, não concede moeda e não envia o dado ao workspace.
 
-Tela é registrada manualmente. O limite é referência sem punição. Foco pode ser registrado em blocos de 25 minutos.
+Tela é registrada manualmente. O limite é referência sem punição. Foco pode ser registrado em blocos de 25 minutos. Anotações do dia salvam automaticamente por data, ficam apenas no dispositivo e aceitam até 4.000 caracteres.
 
 ## 8. Planejamento pessoal
 
@@ -85,7 +85,7 @@ Tela é registrada manualmente. O limite é referência sem punição. Foco pode
 
 **Projetos:** motivo, prazo, marcos concretos e progresso calculado pelos marcos.
 
-**Objetivos:** motivo, área, unidade, alvo, prazo e prêmio.
+**Objetivos:** motivo, área, unidade, alvo, prazo, prêmio, tarefas vinculadas, histórico e mapa mental.
 
 Técnicas disponíveis: Sprint gentil 15/5, Pomodoro 25/5, Blocos flexíveis 45/15 e Primeiro passo de dois minutos.
 
@@ -108,15 +108,17 @@ Workspace
 
 **Meta** é um resultado. Possui descrição, prioridade, status, operação, dependência, responsável, prazo, bônus e ordem.
 
-**Tarefa** é um passo verificável. Possui meta, operação, dependência, responsável, área, status, prioridade, prazo, descrição de pronto e ordem.
+**Tarefa** é um passo verificável. Possui meta, operação, dependência, responsável, área, status, prioridade, prazo, espera opcional com data/hora, descrição de pronto e ordem. A ação “Marcar como concluída” é explícita e informa o XP antes do clique.
 
 **Subtarefa** é um checklist interno sem prêmio separado.
 
 **Ideia** começa na caixa de entrada e pode ficar em avaliação, aprovada ou arquivada. Ideia não vira prioridade automaticamente.
 
+**Mapa mental** é uma árvore persistida por meta. Permite criar, renomear e excluir ramificações. Excluir um nó remove sua descendência; são permitidos até quatro níveis e 40 itens para manter legibilidade e evitar ciclos.
+
 ## 10. Abas do Metas Business
 
-- **Metas:** lista por prioridade e painel detalhado sem sair da tela;
+- **Metas:** lista por prioridade, progresso, XP conquistado/disponível e abas Execução, Mapa mental e Histórico;
 - **Quadro:** caixa de entrada, hoje, andamento, revisão e concluídas;
 - **Operações:** visão das frentes, metas, tarefas e progresso;
 - **Ideias:** captura e triagem;
@@ -150,7 +152,7 @@ Ideias, atividades, hábitos, XP e troféus começam vazios/zerados.
 - nível: `floor(XP / 100) + 1`;
 - ranking: soma atividades de hoje ou sete dias.
 
-Pontos são calculados no banco, não aceitos do navegador. Cada tarefa usa uma chave única de premiação; reabrir e concluir novamente não duplica XP. A meta também possui uma chave única de bônus.
+Pontos são calculados no banco, não aceitos do navegador. Cada tarefa usa uma chave única de premiação; reabrir e concluir novamente não duplica XP. A meta também possui uma chave única de bônus. Mudanças de status entram no histórico com zero XP.
 
 O progresso da meta é derivado das tarefas. Mover tarefa entre metas recalcula a meta antiga e a nova. Subtarefas, ideias, saúde e medicação não pontuam.
 
@@ -176,6 +178,7 @@ No modo demo, a conta permite alternar Kondi/Sócio no mesmo navegador. Isso é 
 | `workspace_tasks` | tarefas, ordem e dependências |
 | `workspace_subtasks` | checklist da tarefa |
 | `workspace_ideas` | caixa de ideias |
+| `workspace_mind_nodes` | árvore de mapa mental por meta |
 | `workspace_activities` | histórico idempotente e ranking |
 | `habit_plans` | plano privado de redução |
 | `habit_logs` | registros diários privados |
@@ -184,6 +187,7 @@ Aplicar as migrations em ordem:
 
 1. `202607290001_collaboration.sql` — base, Auth, RLS e gamificação;
 2. `202607310001_goals_first.sql` — metas completas, CRUD, subtarefas, ideias e bônus idempotente.
+3. `202607310002_mindmaps_waiting.sql` — espera programada, histórico de status e mapa mental seguro.
 
 ## 15. Segurança
 
@@ -195,6 +199,7 @@ RLS está ativa em todas as tabelas colaborativas:
 - `workspace_id` e autor não podem ser trocados pela tarefa;
 - pontos, XP, troféus e bônus são processados por gatilhos;
 - a função interna de recálculo não pode ser chamada por clientes;
+- nós do mapa são validados no workspace/meta, sem ciclos, profundidade excessiva ou troca de escopo;
 - o antigo avanço manual de meta não pode ser executado;
 - hábitos são privados por padrão e compartilhados apenas por opt-in;
 - `service_role` nunca vai para o navegador.
@@ -244,7 +249,7 @@ npm run build
 npm audit --audit-level=high
 ```
 
-Fluxos mínimos: dados iniciais; abrir meta; dependência; CRUD de meta/tarefa/operação/ideia/subtarefa; conclusão sem bônus duplicado; ranking; troca de jogador; convite cloud; isolamento entre workspaces; recarga; desktop e mobile.
+Fluxos mínimos: abrir meta; botão explícito de conclusão; espera/contagem; histórico; XP; CRUD; mapa mental e exclusão em cascata; anotação diária; conclusão sem bônus duplicado; ranking; convite cloud; isolamento; recarga; desktop e mobile.
 
 Limites atuais: painel pessoal permanece local; convite é por código; não há anexos, comentários, calendário externo, timer contínuo ou notificações do sistema; teste Supabase exige um projeto externo; a automação visual depende do navegador local conseguir anexar a aba.
 

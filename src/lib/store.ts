@@ -43,6 +43,8 @@ export function createInitialState(): AppState {
       { id: 'morning-wake', title: 'Acordar cedo', note: 'Marque quando começar o dia.', kind: 'routine', completedDates: [] },
       { id: 'morning-prescription', title: 'Venvanse conforme prescrição', note: 'Apenas um lembrete pessoal: não altere dose ou horário sem orientação profissional.', kind: 'medication', completedDates: [] },
     ],
+    mindNodes: [],
+    dailyNotes: [],
     activities: [],
     screenLogs: [],
     rewards: [

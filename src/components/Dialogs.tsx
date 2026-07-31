@@ -8,8 +8,8 @@ function DialogShell({ title, eyebrow, close, children, small }: { title: string
   return <div className="dialog-layer" onMouseDown={(event) => event.target === event.currentTarget && close()}><section className={`dialog ${small ? 'small' : ''}`} role="dialog" aria-modal="true" aria-label={title}><header><div><p className="eyebrow">{eyebrow}</p><h2>{title}</h2></div><button className="icon-button" onClick={close} aria-label="Fechar"><X size={19} /></button></header>{children}</section></div>
 }
 
-export function MissionDialog({ state, actions, close, notify }: CommonProps) {
-  const [title, setTitle] = useState(''); const [description, setDescription] = useState(''); const [duration, setDuration] = useState(15); const [energy, setEnergy] = useState<Energy>('baixa'); const [priority, setPriority] = useState<Mission['priority']>('essencial'); const [dueDate, setDueDate] = useState(localDate()); const [projectId, setProjectId] = useState(''); const [goalId, setGoalId] = useState('')
+export function MissionDialog({ state, actions, close, notify, initialGoalId }: CommonProps & { initialGoalId?: string }) {
+  const [title, setTitle] = useState(''); const [description, setDescription] = useState(''); const [duration, setDuration] = useState(15); const [energy, setEnergy] = useState<Energy>('baixa'); const [priority, setPriority] = useState<Mission['priority']>('essencial'); const [dueDate, setDueDate] = useState(localDate()); const [projectId, setProjectId] = useState(''); const [goalId, setGoalId] = useState(initialGoalId ?? '')
   const valid = title.trim().length >= 3
   function submit(event: React.FormEvent) { event.preventDefault(); if (!valid) return; actions.addMission({ title: title.trim(), description: description.trim() || 'Comece pela menor ação visível.', duration, energy, priority, dueDate, projectId: projectId || undefined, goalId: goalId || undefined, completedAt: undefined }); notify(dueDate === localDate() ? 'Meta adicionada ao seu dia.' : 'Meta guardada para a data escolhida.'); close() }
   const reward = Math.max(10, Math.round(duration * 1.5))

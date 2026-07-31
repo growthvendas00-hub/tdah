@@ -20,6 +20,8 @@ describe('local persistence and migration', () => {
     expect(state.missions).toEqual([])
     expect(state.activities).toEqual([])
     expect(state.screenLogs).toEqual([])
+    expect(state.mindNodes).toEqual([])
+    expect(state.dailyNotes).toEqual([])
     expect(state.morning.map((item) => item.kind)).toEqual(['routine', 'medication'])
   })
 

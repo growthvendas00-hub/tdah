@@ -18,6 +18,8 @@ export interface Mission {
   createdAt: string
   dueDate: string
   completedAt?: string
+  status?: 'pendente' | 'andamento' | 'aguardando' | 'concluida'
+  waitingUntil?: string
   priority: 'essencial' | 'importante' | 'extra'
 }
 
@@ -64,7 +66,7 @@ export interface RoutineBlock {
 
 export interface Activity {
   id: string
-  type: 'mission' | 'goal' | 'routine' | 'focus' | 'reward' | 'screen'
+  type: 'mission' | 'goal' | 'routine' | 'focus' | 'reward' | 'screen' | 'status'
   title: string
   date: string
   xp: number
@@ -114,6 +116,21 @@ export interface MorningItem {
   completedDates: string[]
 }
 
+export interface MindNode {
+  id: string
+  goalId: string
+  parentId?: string
+  title: string
+  note: string
+  sortOrder: number
+}
+
+export interface DailyNote {
+  date: string
+  content: string
+  updatedAt: string
+}
+
 export interface AppState {
   version: 2
   coins: number
@@ -125,6 +142,8 @@ export interface AppState {
   goals: Goal[]
   routine: RoutinePlan
   morning: MorningItem[]
+  mindNodes: MindNode[]
+  dailyNotes: DailyNote[]
   activities: Activity[]
   screenLogs: ScreenLog[]
   rewards: Reward[]

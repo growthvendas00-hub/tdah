@@ -1,5 +1,5 @@
 export type TeamArea = 'trafego' | 'sites' | 'campanhas' | 'clientes' | 'vsl' | 'operacao' | 'estudo' | 'geral'
-export type TeamTaskStatus = 'backlog' | 'hoje' | 'andamento' | 'revisao' | 'concluida'
+export type TeamTaskStatus = 'backlog' | 'hoje' | 'andamento' | 'aguardando' | 'revisao' | 'concluida'
 export type TeamPriority = 'urgente' | 'importante' | 'normal'
 export type GoalStatus = 'planejada' | 'andamento' | 'bloqueada' | 'concluida'
 export type IdeaStatus = 'inbox' | 'avaliando' | 'aprovada' | 'arquivada'
@@ -24,7 +24,7 @@ export interface TeamGoal {
 export interface TeamTask {
   id: string; workspaceId: string; projectId?: string; goalId?: string; dependsOnTaskId?: string
   title: string; description: string; area: TeamArea; assigneeId?: string; status: TeamTaskStatus
-  priority: TeamPriority; points: number; dueDate?: string; createdBy: string; completedAt?: string; sortOrder: number
+  priority: TeamPriority; points: number; dueDate?: string; waitingUntil?: string; createdBy: string; completedAt?: string; sortOrder: number
 }
 
 export interface TeamSubtask {
@@ -36,13 +36,18 @@ export interface TeamIdea {
   priority: TeamPriority; createdBy: string; createdAt: string
 }
 
-export interface TeamActivity { id: string; workspaceId: string; userId: string; title: string; points: number; date: string; type: 'task' | 'goal' | 'streak' | 'bonus' }
+export interface TeamMindNode {
+  id: string; workspaceId: string; goalId: string; parentId?: string
+  title: string; note: string; sortOrder: number; createdBy: string
+}
+
+export interface TeamActivity { id: string; workspaceId: string; userId: string; title: string; points: number; date: string; type: 'task' | 'goal' | 'streak' | 'bonus' | 'status' }
 export interface HabitPlan { id: string; userId: string; workspaceId?: string; kind: HabitKind; mode: 'reduzir' | 'parar'; baseline: number; target: number; unit: string; shareWithWorkspace: boolean; startedAt: string }
 export interface HabitLog { id: string; planId: string; userId: string; date: string; amount: number; craving?: number; note?: string }
 
 export interface TeamState {
   mode: 'demo' | 'cloud'; configured: boolean; loading: boolean; error: string; user: TeamProfile | null
   profiles: TeamProfile[]; workspaces: Workspace[]; activeWorkspaceId: string | null; members: WorkspaceMember[]
-  projects: TeamProject[]; tasks: TeamTask[]; subtasks: TeamSubtask[]; goals: TeamGoal[]; ideas: TeamIdea[]
+  projects: TeamProject[]; tasks: TeamTask[]; subtasks: TeamSubtask[]; goals: TeamGoal[]; ideas: TeamIdea[]; mindNodes: TeamMindNode[]
   activities: TeamActivity[]; habitPlans: HabitPlan[]; habitLogs: HabitLog[]
 }

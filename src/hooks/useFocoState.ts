@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { clearState, createInitialState, loadState, localDate, saveState } from '../lib/store'
 import { projectProgress } from '../lib/stats'
-import type { AppState, Energy, Goal, Mission, Project, RoutineBlock, SettingsData, TechniqueId } from '../types'
+import { canAddMindNode, descendantIds } from '../lib/mindMap'
+import type { AppState, Energy, Goal, MindNode, Mission, Project, RoutineBlock, SettingsData, TechniqueId } from '../types'
 
 function id() { return crypto.randomUUID() }
 function withLevel(xp: number) { return { xp, level: Math.floor(xp / 100) + 1 } }
@@ -18,21 +19,23 @@ export function useFocoState() {
       result = current.missions.find((item) => item.id === missionId)
       if (!result || result.completed) return current
       const mission = result
-      const missions = current.missions.map((item) => item.id === missionId ? { ...item, completed: true, completedAt: new Date().toISOString() } : item)
+      const firstReward = !mission.completedAt
+      const missions = current.missions.map((item) => item.id === missionId ? { ...item, completed: true, status: 'concluida' as const, completedAt: item.completedAt ?? new Date().toISOString() } : item)
       let projects = current.projects
       if (mission.projectId) {
         const temporary = { ...current, missions } as AppState
         projects = current.projects.map((project) => project.id === mission.projectId ? { ...project, progress: projectProgress(temporary, project.id) } : project)
       }
-      return { ...current, ...withLevel(current.xp + mission.xp), missions, projects, coins: current.coins + mission.coins, activities: [...current.activities, { id: id(), type: 'mission', title: mission.title, date: today, xp: mission.xp, coins: mission.coins }] }
+      return { ...current, ...withLevel(current.xp + (firstReward ? mission.xp : 0)), missions, projects, coins: current.coins + (firstReward ? mission.coins : 0), activities: firstReward ? [...current.activities, { id: id(), type: 'mission', title: mission.title, date: today, xp: mission.xp, coins: mission.coins }] : current.activities }
     })
     return result
   }
 
   function addMission(input: Omit<Mission, 'id' | 'createdAt' | 'completed' | 'coins' | 'xp'>) {
     const coins = Math.max(10, Math.round(input.duration * 1.5))
-    setState((current) => ({ ...current, missions: [{ ...input, id: id(), createdAt: new Date().toISOString(), completed: false, coins, xp: coins + 10 }, ...current.missions] }))
+    setState((current) => ({ ...current, missions: [{ ...input, id: id(), createdAt: new Date().toISOString(), completed: false, status: 'pendente', coins, xp: coins + 10 }, ...current.missions] }))
   }
+  function setMissionStatus(missionId: string, status: NonNullable<Mission['status']>, waitingUntil?: string) { setState((current) => { const mission = current.missions.find((item) => item.id === missionId); if (!mission || mission.status === status) return current; const labels = { pendente: 'Pendente', andamento: 'Em andamento', aguardando: 'Aguardando', concluida: 'Concluída' }; return { ...current, missions: current.missions.map((item) => item.id === missionId ? { ...item, status, completed: status === 'concluida', waitingUntil: status === 'aguardando' ? waitingUntil : undefined } : item), activities: [...current.activities, { id: id(), type: 'status', title: `${labels[status]}: ${mission.title}`, date: today, xp: 0, coins: 0 }] } }) }
 
   function addProject(project: Omit<Project, 'id' | 'progress' | 'status' | 'milestones'>) {
     setState((current) => ({ ...current, projects: [...current.projects, { ...project, id: id(), progress: 0, status: 'ativo', milestones: [] }] }))
@@ -66,6 +69,9 @@ export function useFocoState() {
     setState((current) => ({ ...current, goals: [...current.goals, { ...goal, id: id(), current: 0, completed: false }] }))
   }
 
+  function updateGoal(goalId: string, values: Partial<Omit<Goal, 'id' | 'current' | 'completed'>>) { setState((current) => ({ ...current, goals: current.goals.map((goal) => goal.id === goalId ? { ...goal, ...values } : goal) })) }
+  function deleteGoal(goalId: string) { setState((current) => ({ ...current, goals: current.goals.filter((goal) => goal.id !== goalId), missions: current.missions.map((mission) => mission.goalId === goalId ? { ...mission, goalId: undefined } : mission), mindNodes: current.mindNodes.filter((node) => node.goalId !== goalId) })) }
+
   function advanceGoal(goalId: string, amount = 1) {
     setState((current) => {
       const goal = current.goals.find((item) => item.id === goalId)
@@ -95,6 +101,16 @@ export function useFocoState() {
   function toggleMorningItem(itemId: string) {
     setState((current) => ({ ...current, morning: current.morning.map((item) => item.id === itemId ? { ...item, completedDates: item.completedDates.includes(today) ? item.completedDates.filter((date) => date !== today) : [...item.completedDates, today] } : item) }))
   }
+
+  function saveDailyNote(content: string) { setState((current) => ({ ...current, dailyNotes: current.dailyNotes.some((note) => note.date === today) ? current.dailyNotes.map((note) => note.date === today ? { ...note, content, updatedAt: new Date().toISOString() } : note) : [...current.dailyNotes, { date: today, content, updatedAt: new Date().toISOString() }] })) }
+  function saveMindNode(input: Pick<MindNode, 'goalId' | 'parentId' | 'title' | 'note'>, nodeId?: string) {
+    setState((current) => {
+      const goalNodes = current.mindNodes.filter((node) => node.goalId === input.goalId)
+      if (!nodeId && !canAddMindNode(goalNodes, input.parentId)) return current
+      return { ...current, mindNodes: nodeId ? current.mindNodes.map((node) => node.id === nodeId ? { ...node, title: input.title.trim(), note: input.note.trim() } : node) : [...current.mindNodes, { ...input, id: id(), title: input.title.trim(), note: input.note.trim(), sortOrder: goalNodes.filter((node) => node.parentId === input.parentId).length }] }
+    })
+  }
+  function deleteMindNode(nodeId: string) { setState((current) => { const removed = descendantIds(current.mindNodes, nodeId); removed.add(nodeId); return { ...current, mindNodes: current.mindNodes.filter((node) => !removed.has(node.id)) } }) }
 
   function setTechnique(technique: TechniqueId) { setState((current) => ({ ...current, routine: { ...current.routine, technique } })) }
   function updateRoutine(values: Partial<Pick<AppState['routine'], 'wakeTime' | 'sleepTime' | 'intention'>>) { setState((current) => ({ ...current, routine: { ...current.routine, ...values } })) }
@@ -129,7 +145,7 @@ export function useFocoState() {
   function setEnergy(energy: Energy) { setState((current) => ({ ...current, energy })) }
   function resetAll() { clearState(); setState(createInitialState()) }
 
-  return { state, todayMissions, actions: { completeMission, addMission, addProject, addMilestone, toggleMilestone, addGoal, advanceGoal, addRoutineBlock, toggleRoutineBlock, toggleMorningItem, setTechnique, updateRoutine, recordFocus, addScreenMinutes, useReward, updateSettings, setEnergy, resetAll } }
+  return { state, todayMissions, actions: { completeMission, addMission, setMissionStatus, addProject, addMilestone, toggleMilestone, addGoal, updateGoal, deleteGoal, advanceGoal, addRoutineBlock, toggleRoutineBlock, toggleMorningItem, saveDailyNote, saveMindNode, deleteMindNode, setTechnique, updateRoutine, recordFocus, addScreenMinutes, useReward, updateSettings, setEnergy, resetAll } }
 }
 
 export type FocoActions = ReturnType<typeof useFocoState>['actions']

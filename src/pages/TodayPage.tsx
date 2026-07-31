@@ -1,4 +1,4 @@
-import { ArrowRight, BatteryFull, BatteryLow, BatteryMedium, Check, CheckCircle2, Clock3, Coins, Crosshair, HeartPulse, MonitorSmartphone, Plus, Sparkles, Target, TimerReset, Zap } from 'lucide-react'
+import { ArrowRight, BatteryFull, BatteryLow, BatteryMedium, Check, CheckCircle2, Clock3, Coins, Crosshair, HeartPulse, MonitorSmartphone, Plus, Sparkles, StickyNote, Target, TimerReset, Zap } from 'lucide-react'
 import { localDate } from '../lib/store'
 import { clampProgress, currentStreak, todayActivities } from '../lib/stats'
 import type { FocoActions } from '../hooks/useFocoState'
@@ -23,6 +23,7 @@ export function TodayPage({ state, missions, actions, complete, openMission, nav
   const screen = state.screenLogs.find((item) => item.date === localDate())?.minutes ?? 0
   const screenProgress = clampProgress(screen, state.settings.dailyScreenLimit)
   const todayRoutine = state.routine.blocks.filter((item) => item.days.includes(new Date().getDay()))
+  const dailyNote = state.dailyNotes.find((item) => item.date === localDate())
   return <div className="page today-page">
     <section className="day-intro">
       <div><p className="eyebrow">{date}</p><h1>{state.settings.displayName ? `Oi, ${state.settings.displayName}.` : 'Oi, vamos com calma.'}</h1><p>Escolha um passo possível. O resto pode esperar um pouco.</p></div>
@@ -36,6 +37,12 @@ export function TodayPage({ state, missions, actions, complete, openMission, nav
       <div className="section-title compact"><div><p className="eyebrow">COMEÇO DA MANHÃ</p><h2>Dois lembretes, sem pontuação</h2></div><HeartPulse size={21} /></div>
       <p>Cuidados pessoais não entram no ranking nem geram moedas.</p>
       <div>{state.morning.map((item) => { const done = item.completedDates.includes(localDate()); return <button key={item.id} className={done ? 'done' : ''} onClick={() => actions.toggleMorningItem(item.id)}><span>{done ? <CheckCircle2 size={19} /> : <i />}</span><div><strong>{item.title}</strong><small>{item.note}</small></div></button> })}</div>
+    </section>
+
+    <section className="daily-note-card surface">
+      <div className="section-title compact"><div><p className="eyebrow">ANOTAÇÕES DO DIA</p><h2>Tire da cabeça sem organizar agora</h2></div><StickyNote size={21} /></div>
+      <textarea aria-label="Anotações do dia" maxLength={4000} rows={4} value={dailyNote?.content ?? ''} onChange={(event) => actions.saveDailyNote(event.target.value)} placeholder="Ideias, lembretes, decisões ou qualquer coisa que você não quer esquecer..." />
+      <footer><span>{dailyNote?.content.length ?? 0}/4000</span><small>{dailyNote?.content ? 'Salvo automaticamente neste dispositivo' : 'A anotação fica privada no seu espaço individual'}</small></footer>
     </section>
 
     <section className="next-step-card">
