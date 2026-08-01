@@ -65,7 +65,7 @@ As chaves antigas não são carregadas, portanto os exemplos fictícios anterior
 - `conta`: cadastro, login, perfil ou troca do jogador demo;
 - `configuracoes`: preferências, demonstração, backup, importação e recuperação.
 
-A sidebar e o menu mobile ficam em `Navigation.tsx`. `Ctrl/Cmd + K` abre busca e `Escape` fecha diálogos pessoais.
+A sidebar e o menu mobile ficam em `Navigation.tsx`. Conta e Configurações ficam juntas no cartão de perfil, no rodapé esquerdo. `Ctrl/Cmd + K` abre busca e `Escape` fecha diálogos pessoais.
 
 ## 7. Meu dia
 

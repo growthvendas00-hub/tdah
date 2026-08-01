@@ -26,14 +26,13 @@ export function Navigation({ state, teamState, view, mobileOpen, navigate, close
         <p className="nav-heading">ORGANIZAR</p>
         {nav.map(({ id, label, icon: Icon }) => <button key={id} className={view === id ? 'active' : ''} onClick={() => navigate(id)}><Icon size={18} /><span>{label}</span>{id === 'semana' && todayCount > 0 && <i>{todayCount}</i>}</button>)}
       </nav>
-      <div className="side-account"><span className="player-avatar small" style={{ background: teamState.user?.avatarColor }}>{teamState.user?.displayName.slice(0, 1) ?? '?'}</span><div><strong>{teamState.user?.displayName ?? 'Sem conta'}</strong><small>{teamState.mode === 'cloud' ? 'conta sincronizada' : 'modo demonstração'}</small></div><button onClick={() => navigate('conta')} aria-label="Abrir conta"><UserCircle size={18} /></button></div>
       <div className="side-spacer" />
       <div className="level-card">
         <div className="level-card-head"><span><Zap size={15} /> Nível {state.level}</span><small>{state.xp % 100}/100 XP</small></div>
         <div className="soft-progress"><i style={{ width: `${state.xp % 100}%` }} /></div>
         <p>Mais um pouco e você evolui.</p>
       </div>
-      <button className={`side-settings ${view === 'configuracoes' ? 'active' : ''}`} onClick={() => navigate('configuracoes')}><Settings size={18} />Configurações</button>
+      <div className="side-account"><span className="player-avatar small" style={{ background: teamState.user?.avatarColor }}>{teamState.user?.displayName.slice(0, 1) ?? '?'}</span><div><strong>{teamState.user?.displayName ?? 'Sem conta'}</strong><small>{teamState.mode === 'cloud' ? 'conta sincronizada' : 'modo demonstração'}</small></div><div className="side-account-actions"><button onClick={() => navigate('conta')} aria-label="Abrir conta" title="Conta"><UserCircle size={18} /></button><button className={view === 'configuracoes' ? 'active' : ''} onClick={() => navigate('configuracoes')} aria-label="Abrir configurações" title="Configurações"><Settings size={18} /></button></div></div>
     </aside>
     <header className="app-header">
       <button className="icon-button mobile-menu" onClick={openMobile} aria-label="Abrir menu"><Menu size={20} /></button>
