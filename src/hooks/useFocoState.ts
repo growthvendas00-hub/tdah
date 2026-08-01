@@ -142,10 +142,11 @@ export function useFocoState() {
   function updateSettings(values: Partial<SettingsData>) {
     setState((current) => ({ ...current, settings: { ...current.settings, ...values }, rewards: values.activeTheme ? current.rewards.map((item) => item.kind === 'theme' ? { ...item, equipped: values.activeTheme === 'lavanda' && item.owned } : item) : current.rewards }))
   }
+  function replaceState(next: AppState) { setState(JSON.parse(JSON.stringify(next)) as AppState) }
   function setEnergy(energy: Energy) { setState((current) => ({ ...current, energy })) }
   function resetAll() { clearState(); setState(createInitialState()) }
 
-  return { state, todayMissions, actions: { completeMission, addMission, setMissionStatus, addProject, addMilestone, toggleMilestone, addGoal, updateGoal, deleteGoal, advanceGoal, addRoutineBlock, toggleRoutineBlock, toggleMorningItem, saveDailyNote, saveMindNode, deleteMindNode, setTechnique, updateRoutine, recordFocus, addScreenMinutes, useReward, updateSettings, setEnergy, resetAll } }
+  return { state, todayMissions, actions: { completeMission, addMission, setMissionStatus, addProject, addMilestone, toggleMilestone, addGoal, updateGoal, deleteGoal, advanceGoal, addRoutineBlock, toggleRoutineBlock, toggleMorningItem, saveDailyNote, saveMindNode, deleteMindNode, setTechnique, updateRoutine, recordFocus, addScreenMinutes, useReward, updateSettings, replaceState, setEnergy, resetAll } }
 }
 
 export type FocoActions = ReturnType<typeof useFocoState>['actions']

@@ -19,6 +19,7 @@ Princípios: pouca fricção; prioridades explícitas; tarefas pequenas; tempo v
 ```text
 React SPA
 ├─ useFocoState → estado pessoal → localStorage
+├─ backup/showcase → snapshot, JSON validado e cópia local
 └─ useTeamState
    ├─ demonstração → localStorage
    └─ nuvem → Supabase Auth + PostgreSQL + RLS + Realtime
@@ -62,7 +63,7 @@ As chaves antigas não são carregadas, portanto os exemplos fictícios anterior
 - `habitos`: registro privado de redução de tabaco/cannabis;
 - `recompensas`: loja pessoal;
 - `conta`: cadastro, login, perfil ou troca do jogador demo;
-- `configuracoes`: preferências e restauração local.
+- `configuracoes`: preferências, demonstração, backup, importação e recuperação.
 
 A sidebar e o menu mobile ficam em `Navigation.tsx`. `Ctrl/Cmd + K` abre busca e `Escape` fecha diálogos pessoais.
 
@@ -166,7 +167,17 @@ O progresso da meta é derivado das tarefas. Mover tarefa entre metas recalcula 
 
 No modo demo, a conta permite alternar Kondi/Sócio no mesmo navegador. Isso é simulação, não sincronização real.
 
-## 14. Banco de dados
+## 14. Demonstração, backup e restauração
+
+**Preencher com dados fictícios** cria primeiro um snapshot completo e imutável do individual e do Business carregado; depois troca a interface por um conjunto rico de projetos, metas, tarefas, estados, mapas, histórico, ranking, hábitos, recompensas e anotações. Com Supabase, a demonstração pausa Realtime e trabalha em cópia local, sem escrever no workspace real.
+
+**Voltar à configuração original** restaura o snapshot anterior e só então remove a marca da demonstração. Ativar, restaurar, importar ou recuperar exige digitar `CONFIRMAR` em um diálogo separado.
+
+**Baixar backup** gera `foco-backup-AAAA-MM-DD.json` com versão, data, dados pessoais, estado Business carregado e impressão de integridade. **Importar backup** limita o arquivo a 5 MB, valida formato, versão, integridade, IDs e relacionamentos antes de alterar qualquer estado. A importação guarda antes uma recuperação automática e abre o Business como cópia local segura; nunca apaga o Supabase.
+
+**Desfazer a última troca** usa essa recuperação uma vez. O arquivo JSON deve ser guardado pelo usuário: limpar todo o armazenamento do navegador também remove snapshots automáticos, mas não remove o arquivo baixado.
+
+## 15. Banco de dados
 
 | Tabela | Função |
 |---|---|
@@ -189,7 +200,7 @@ Aplicar as migrations em ordem:
 2. `202607310001_goals_first.sql` — metas completas, CRUD, subtarefas, ideias e bônus idempotente.
 3. `202607310002_mindmaps_waiting.sql` — espera programada, histórico de status e mapa mental seguro.
 
-## 15. Segurança
+## 16. Segurança
 
 RLS está ativa em todas as tabelas colaborativas:
 
@@ -203,10 +214,12 @@ RLS está ativa em todas as tabelas colaborativas:
 - o antigo avanço manual de meta não pode ser executado;
 - hábitos são privados por padrão e compartilhados apenas por opt-in;
 - `service_role` nunca vai para o navegador.
+- backup inválido ou adulterado é rejeitado antes da substituição;
+- apresentação/importação local não envia dados fictícios ao Supabase.
 
 Erros do Supabase interrompem o formulário e aparecem na tela; a UI não confirma sucesso falso.
 
-## 16. Mapa de arquivos
+## 17. Mapa de arquivos
 
 ```text
 /
@@ -222,6 +235,8 @@ Erros do Supabase interrompem o formulário e aparecem na tela; a UI não confir
    ├─ hooks/useTeamState.ts      auth, CRUD, demo, cloud e realtime
    ├─ lib/store.ts               estado pessoal inicial/persistência
    ├─ lib/teamStore.ts           workspace demo solicitado
+   ├─ lib/backup.ts              formato, validação, snapshot e recuperação
+   ├─ lib/showcaseData.ts         conteúdo fictício isolado
    ├─ lib/stats.ts               semana, progresso e sequência
    ├─ lib/teamStats.ts           pontos, ranking e hábitos
    ├─ lib/*.test.ts              testes automatizados
@@ -229,16 +244,18 @@ Erros do Supabase interrompem o formulário e aparecem na tela; a UI não confir
    └─ pages/                     hoje, semana, planejamento, equipe etc.
 ```
 
-## 17. Supabase e Vercel
+## 18. Supabase e Vercel
 
 1. Criar projeto no Supabase.
-2. Rodar as duas migrations no SQL Editor, na ordem acima.
+2. Rodar as três migrations no SQL Editor, na ordem acima.
 3. Na Vercel, cadastrar `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
 4. Não cadastrar `service_role`.
 5. Fazer deploy e criar as duas contas.
 6. Criar/entrar no workspace com o código e testar em dois navegadores.
 
-## 18. Verificação da versão
+Modo demonstração, exportação e importação local não exigem Supabase nem variável nova.
+
+## 19. Verificação da versão
 
 Executar:
 
@@ -249,11 +266,11 @@ npm run build
 npm audit --audit-level=high
 ```
 
-Fluxos mínimos: abrir meta; botão explícito de conclusão; espera/contagem; histórico; XP; CRUD; mapa mental e exclusão em cascata; anotação diária; conclusão sem bônus duplicado; ranking; convite cloud; isolamento; recarga; desktop e mobile.
+Fluxos mínimos: abrir meta; conclusão; espera; histórico; XP; CRUD; mapa; anotação; bônus idempotente; ranking; demo → restauração idêntica; exportação → importação; arquivo corrompido/relação quebrada; recuperação; convite cloud; isolamento; recarga; desktop e mobile.
 
 Limites atuais: painel pessoal permanece local; convite é por código; não há anexos, comentários, calendário externo, timer contínuo ou notificações do sistema; teste Supabase exige um projeto externo; a automação visual depende do navegador local conseguir anexar a aba.
 
-## 19. Caminho do produto
+## 20. Caminho do produto
 
 1. Aplicar migrations e validar RLS com duas contas reais.
 2. Usar o fluxo de metas por alguns dias e observar fricções reais.

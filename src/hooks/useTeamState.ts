@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { localDate } from '../lib/store'
 import { canAddMindNode, descendantIds } from '../lib/mindMap'
-import { createDemoTeamState, loadDemoTeamState, saveDemoTeamState, saveDemoUser } from '../lib/teamStore'
+import { createDemoTeamState, hasLocalTeamOverride, loadDemoTeamState, saveDemoTeamState, saveDemoUser, setLocalTeamOverride } from '../lib/teamStore'
 import { supabase as maybeSupabase, supabaseConfigured } from '../lib/supabase'
 import type { HabitPlan, TeamGoal, TeamIdea, TeamMindNode, TeamProfile, TeamProject, TeamState, TeamSubtask, TeamTask, WorkspaceMember } from '../types/team'
 
@@ -23,6 +23,9 @@ const mapHabit = (r: Row): HabitPlan => ({ id: r.id, userId: r.user_id, workspac
 export function useTeamState() {
   const [state, setState] = useState<TeamState>(loadDemoTeamState)
   const [session, setSession] = useState<Session | null>(null)
+  const [localOverride, setLocalOverride] = useState(hasLocalTeamOverride)
+  const localOverrideRef = useRef(localOverride)
+  useEffect(() => { localOverrideRef.current = localOverride }, [localOverride])
   const loadCloud = useCallback(async (userId: string, preferredWorkspace?: string | null) => {
     if (!supabase) return
     setState((current) => ({ ...current, mode: 'cloud', configured: true, loading: true, error: '' }))
@@ -44,9 +47,9 @@ export function useTeamState() {
     } catch (error) { setState((current) => ({ ...current, loading: false, error: error instanceof Error ? error.message : 'Não foi possível carregar o workspace.' })) }
   }, [])
 
-  useEffect(() => { if (!supabaseConfigured || !supabase) return; supabase.auth.getSession().then(({ data }) => { setSession(data.session); if (data.session) loadCloud(data.session.user.id) }); const { data } = supabase.auth.onAuthStateChange((_event, next) => { setSession(next); if (next) loadCloud(next.user.id); else setState({ ...createDemoTeamState(), mode: 'cloud', configured: true, user: null, workspaces: [], members: [], projects: [], tasks: [], subtasks: [], goals: [], ideas: [], mindNodes: [], activities: [], habitPlans: [], habitLogs: [] }) }); return () => data.subscription.unsubscribe() }, [loadCloud])
+  useEffect(() => { if (!supabaseConfigured || !supabase) return; supabase.auth.getSession().then(({ data }) => { setSession(data.session); if (data.session && !localOverrideRef.current) loadCloud(data.session.user.id) }); const { data } = supabase.auth.onAuthStateChange((_event, next) => { setSession(next); if (localOverrideRef.current) return; if (next) loadCloud(next.user.id); else setState({ ...createDemoTeamState(), mode: 'cloud', configured: true, user: null, workspaces: [], members: [], projects: [], tasks: [], subtasks: [], goals: [], ideas: [], mindNodes: [], activities: [], habitPlans: [], habitLogs: [] }) }); return () => data.subscription.unsubscribe() }, [loadCloud])
   useEffect(() => { if (state.mode === 'demo') saveDemoTeamState(state) }, [state])
-  useEffect(() => { if (!supabase || !session || !state.activeWorkspaceId) return; const client = supabase; const reload = () => loadCloud(session.user.id, state.activeWorkspaceId); const channel = client.channel(`workspace:${state.activeWorkspaceId}`); ['workspace_projects', 'workspace_tasks', 'workspace_subtasks', 'workspace_goals', 'workspace_ideas', 'workspace_mind_nodes', 'workspace_activities'].forEach((table) => channel.on('postgres_changes', { event: '*', schema: 'public', table, filter: `workspace_id=eq.${state.activeWorkspaceId}` }, reload)); channel.subscribe(); return () => { client.removeChannel(channel) } }, [session, state.activeWorkspaceId, loadCloud])
+  useEffect(() => { if (localOverride || !supabase || !session || !state.activeWorkspaceId) return; const client = supabase; const reload = () => loadCloud(session.user.id, state.activeWorkspaceId); const channel = client.channel(`workspace:${state.activeWorkspaceId}`); ['workspace_projects', 'workspace_tasks', 'workspace_subtasks', 'workspace_goals', 'workspace_ideas', 'workspace_mind_nodes', 'workspace_activities'].forEach((table) => channel.on('postgres_changes', { event: '*', schema: 'public', table, filter: `workspace_id=eq.${state.activeWorkspaceId}` }, reload)); channel.subscribe(); return () => { client.removeChannel(channel) } }, [session, state.activeWorkspaceId, loadCloud, localOverride])
 
   const updateDemo = (change: (current: TeamState) => TeamState) => setState((current) => change(current))
   const refresh = async () => { if (session) await loadCloud(session.user.id, state.activeWorkspaceId) }
@@ -110,6 +113,16 @@ export function useTeamState() {
   async function logHabit(planId: string, amount: number, craving?: number, note?: string) { if (!state.user) return; if (state.mode === 'cloud' && supabase) return cloud(() => supabase.from('habit_logs').upsert({ plan_id: planId, user_id: state.user!.id, date: localDate(), amount: Math.max(0, amount), craving, note }, { onConflict: 'plan_id,date' })); updateDemo((c) => { const existing = c.habitLogs.find((l) => l.planId === planId && l.date === localDate()); return { ...c, habitLogs: existing ? c.habitLogs.map((l) => l.id === existing.id ? { ...l, amount, craving, note } : l) : [...c.habitLogs, { id: uid(), planId, userId: c.user!.id, date: localDate(), amount, craving, note }] } }) }
   async function createHabit(kind: HabitPlan['kind']) { if (!state.user || state.habitPlans.some((p) => p.userId === state.user!.id && p.kind === kind)) return; const input = { user_id: state.user.id, kind, mode: 'reduzir', baseline: 0, target: 0, unit: kind === 'tabaco' ? 'cigarros/dia' : 'sessões/semana', share_with_workspace: false, workspace_id: state.activeWorkspaceId, started_at: localDate() }; if (state.mode === 'cloud' && supabase) return cloud(() => supabase.from('habit_plans').insert(input)); updateDemo((c) => ({ ...c, habitPlans: [...c.habitPlans, mapHabit({ id: uid(), ...input })] })) }
 
-  return { state, session, actions: { signUp, signIn, signOut, switchDemoUser, createWorkspace, joinWorkspace, setWorkspace, saveProject, deleteProject, saveGoal, deleteGoal, saveTask, deleteTask, moveTask, saveSubtask, toggleSubtask, deleteSubtask, saveIdea, deleteIdea, saveMindNode, deleteMindNode, updateHabitPlan, logHabit, createHabit, refresh } }
+  function useLocalState(next: TeamState) {
+    const local = { ...JSON.parse(JSON.stringify(next)) as TeamState, mode: 'demo' as const, configured: false, loading: false, error: '' }
+    localOverrideRef.current = true; setLocalTeamOverride(true); setLocalOverride(true); setState(local); saveDemoTeamState(local)
+  }
+  async function restoreState(next: TeamState) {
+    localOverrideRef.current = false; setLocalTeamOverride(false); setLocalOverride(false)
+    if (next.mode === 'cloud' && session) await loadCloud(session.user.id, next.activeWorkspaceId)
+    else { const restored = JSON.parse(JSON.stringify(next)) as TeamState; setState(restored); if (restored.mode === 'demo') saveDemoTeamState(restored) }
+  }
+
+  return { state, session, actions: { signUp, signIn, signOut, switchDemoUser, createWorkspace, joinWorkspace, setWorkspace, saveProject, deleteProject, saveGoal, deleteGoal, saveTask, deleteTask, moveTask, saveSubtask, toggleSubtask, deleteSubtask, saveIdea, deleteIdea, saveMindNode, deleteMindNode, updateHabitPlan, logHabit, createHabit, useLocalState, restoreState, refresh } }
 }
 export type TeamActions = ReturnType<typeof useTeamState>['actions']

@@ -53,7 +53,7 @@ function App() {
       {view === 'habitos' && <HabitsPage state={team.state} actions={team.actions} openAccount={() => navigate('conta')} notify={notify} />}
       {view === 'recompensas' && <RewardsPage state={state} actions={actions} notify={notify} />}
       {view === 'conta' && <AccountPage state={team.state} session={team.session} actions={team.actions} notify={notify} />}
-      {view === 'configuracoes' && <SettingsPage state={state} actions={actions} notify={notify} />}
+      {view === 'configuracoes' && <SettingsPage state={state} actions={actions} teamState={team.state} teamActions={team.actions} notify={notify} />}
     </main>
     {dialog === 'mission' && <MissionDialog state={state} actions={actions} initialGoalId={missionGoalId} close={() => setDialog(null)} notify={notify} />}
     {dialog === 'project' && <ProjectDialog actions={actions} close={() => setDialog(null)} notify={notify} />}

@@ -3,6 +3,7 @@ import type { TeamGoal, TeamProfile, TeamProject, TeamState, TeamTask, Workspace
 
 const key = 'foco-team-v2'
 const userKey = 'foco-team-demo-user'
+const localOverrideKey = 'foco-team-local-override-v1'
 
 const profiles: TeamProfile[] = [
   { id: 'demo-kondi', displayName: 'Kondi', avatarColor: '#72957a', workspaceXp: 0, trophies: 0 },
@@ -41,3 +42,5 @@ export function createDemoTeamState(): TeamState {
 export function loadDemoTeamState() { try { const value = localStorage.getItem(key); if (value) return { ...createDemoTeamState(), ...JSON.parse(value) } as TeamState } catch { /* fresh state */ } return createDemoTeamState() }
 export function saveDemoTeamState(state: TeamState) { localStorage.setItem(key, JSON.stringify({ ...state, loading: false, error: '' })) }
 export function saveDemoUser(userId: string) { localStorage.setItem(userKey, userId) }
+export function hasLocalTeamOverride() { return localStorage.getItem(localOverrideKey) === 'true' }
+export function setLocalTeamOverride(active: boolean) { if (active) localStorage.setItem(localOverrideKey, 'true'); else localStorage.removeItem(localOverrideKey) }
