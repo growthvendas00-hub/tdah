@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { clearDemoSnapshot, createBackupDocument, loadDemoSnapshot, parseBackupDocument, saveDemoSnapshot, validateBackupDocument } from './backup'
+import { clearDemoSnapshot, createBackupDocument, isConfirmationValid, loadDemoSnapshot, parseBackupDocument, saveDemoSnapshot, validateBackupDocument } from './backup'
 import { createShowcasePersonal, createShowcaseTeam } from './showcaseData'
 import { createInitialState } from './store'
 import { createDemoTeamState } from './teamStore'
@@ -13,6 +13,13 @@ describe('complete backup and demonstration safety', () => {
       setItem: (key: string, value: string) => values.set(key, value),
       removeItem: (key: string) => values.delete(key),
     })
+  })
+
+  it('accepts the safety word regardless of letter case or outer spaces', () => {
+    expect(isConfirmationValid('CONFIRMAR')).toBe(true)
+    expect(isConfirmationValid('confirmar')).toBe(true)
+    expect(isConfirmationValid('  Confirmar  ')).toBe(true)
+    expect(isConfirmationValid('confirmado')).toBe(false)
   })
 
   it('restores the exact state saved before demonstration', () => {

@@ -171,7 +171,7 @@ No modo demo, a conta permite alternar Kondi/Sócio no mesmo navegador. Isso é 
 
 **Preencher com dados fictícios** cria primeiro um snapshot completo e imutável do individual e do Business carregado; depois troca a interface por um conjunto rico de projetos, metas, tarefas, estados, mapas, histórico, ranking, hábitos, recompensas e anotações. Com Supabase, a demonstração pausa Realtime e trabalha em cópia local, sem escrever no workspace real.
 
-**Voltar à configuração original** restaura o snapshot anterior e só então remove a marca da demonstração. Ativar, restaurar, importar ou recuperar exige digitar `CONFIRMAR` em um diálogo separado.
+**Voltar à configuração original** restaura o snapshot anterior e só então remove a marca da demonstração. Ativar, restaurar, importar ou recuperar exige digitar `CONFIRMAR` em um diálogo separado; maiúsculas/minúsculas e espaços externos são normalizados.
 
 **Baixar backup** gera `foco-backup-AAAA-MM-DD.json` com versão, data, dados pessoais, estado Business carregado e impressão de integridade. **Importar backup** limita o arquivo a 5 MB, valida formato, versão, integridade, IDs e relacionamentos antes de alterar qualquer estado. A importação guarda antes uma recuperação automática e abre o Business como cópia local segura; nunca apaga o Supabase.
 

@@ -2,7 +2,7 @@ import { Bell, DatabaseBackup, Download, MonitorSmartphone, Moon, Palette, PlayC
 import { useEffect, useRef, useState } from 'react'
 import type { FocoActions } from '../hooks/useFocoState'
 import type { TeamActions } from '../hooks/useTeamState'
-import { clearDemoSnapshot, clearRecoverySnapshot, createBackupDocument, downloadBackup, hasDemoSnapshot, hasRecoverySnapshot, loadDemoSnapshot, loadRecoverySnapshot, parseBackupDocument, saveDemoSnapshot, saveRecoverySnapshot, type BackupDocument } from '../lib/backup'
+import { clearDemoSnapshot, clearRecoverySnapshot, createBackupDocument, downloadBackup, hasDemoSnapshot, hasRecoverySnapshot, isConfirmationValid, loadDemoSnapshot, loadRecoverySnapshot, parseBackupDocument, saveDemoSnapshot, saveRecoverySnapshot, type BackupDocument } from '../lib/backup'
 import { createShowcasePersonal, createShowcaseTeam } from '../lib/showcaseData'
 import type { AppState, Theme } from '../types'
 import type { TeamState } from '../types/team'
@@ -26,7 +26,7 @@ export function SettingsPage({ state, actions, teamState, teamActions, notify }:
     finally { if (fileInput.current) fileInput.current.value = '' }
   }
   async function confirmAction() {
-    if (confirmation.trim() !== 'CONFIRMAR' || !confirming) return
+    if (!isConfirmationValid(confirmation) || !confirming) return
     setBusy(true)
     try {
       if (confirming === 'showcase') {
@@ -66,7 +66,8 @@ function ConfirmationDialog({ kind, value, setValue, summary, busy, close, confi
     import: { title: 'Importar este backup?', text: `O estado atual será guardado para recuperação antes da troca. ${summary}`, action: 'Importar tudo' },
     recovery: { title: 'Desfazer a última troca?', text: 'A cópia automática anterior será aplicada no individual e no Business.', action: 'Recuperar dados' },
   }[kind]
-  return <div className="dialog-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) close() }}><section className="dialog confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="data-confirm-title"><header><div><p className="eyebrow">CONFIRMAÇÃO DE SEGURANÇA</p><h2 id="data-confirm-title">{copy.title}</h2></div><button className="icon-button" onClick={close} disabled={busy} aria-label="Fechar"><X size={18} /></button></header><div className="confirmation-warning"><ShieldCheck size={22} /><p>{copy.text}</p></div><label>Digite <strong>CONFIRMAR</strong> para continuar<input autoFocus value={value} onChange={(event) => setValue(event.target.value)} placeholder="CONFIRMAR" autoComplete="off" /></label><footer className="dialog-actions"><span /><button className="secondary-button" onClick={close} disabled={busy}>Cancelar</button><button className="primary-button" onClick={confirm} disabled={busy || value.trim() !== 'CONFIRMAR'}>{busy ? 'Processando…' : copy.action}</button></footer></section></div>
+  const recognized = isConfirmationValid(value)
+  return <div className="dialog-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) close() }}><section className="dialog confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="data-confirm-title"><header><div><p className="eyebrow">CONFIRMAÇÃO DE SEGURANÇA</p><h2 id="data-confirm-title">{copy.title}</h2></div><button type="button" className="icon-button" onClick={close} disabled={busy} aria-label="Fechar"><X size={18} /></button></header><div className="confirmation-warning"><ShieldCheck size={22} /><p>{copy.text}</p></div><form onSubmit={(event) => { event.preventDefault(); if (recognized && !busy) confirm() }}><label>Digite <strong>CONFIRMAR</strong> para continuar<input autoFocus value={value} onChange={(event) => setValue(event.target.value)} placeholder="CONFIRMAR" autoComplete="off" aria-describedby="confirmation-help" /></label><small id="confirmation-help" className={recognized ? 'confirmation-recognized' : 'confirmation-help'}>{recognized ? 'Confirmação reconhecida. Você já pode continuar.' : 'Pode escrever em letras maiúsculas ou minúsculas.'}</small><footer className="dialog-actions"><span /><button type="button" className="secondary-button" onClick={close} disabled={busy}>Cancelar</button><button type="submit" className="primary-button" disabled={busy || !recognized}>{busy ? 'Processando…' : copy.action}</button></footer></form></section></div>
 }
 
 function ThemeButton({ theme, active, locked, onClick }: { theme: Theme; active: boolean; locked?: boolean; onClick: () => void }) { return <button className={`${theme} ${active ? 'active' : ''}`} onClick={onClick}><span><i /><i /><i /></span><strong>{theme === 'sereno' ? 'Bosque sereno' : 'Lavanda calma'}</strong><small>{locked ? 'Bloqueado na loja' : active ? 'Em uso' : 'Usar tema'}</small></button> }

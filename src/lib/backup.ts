@@ -17,6 +17,8 @@ export interface BackupDocument {
 
 type BackupPayload = Omit<BackupDocument, 'fingerprint'>
 
+export function isConfirmationValid(value: string) { return value.trim().toLocaleUpperCase('pt-BR') === 'CONFIRMAR' }
+
 function clone<T>(value: T): T { return JSON.parse(JSON.stringify(value)) as T }
 function normalizedTeam(team: TeamState): TeamState { return { ...clone(team), loading: false, error: '' } }
 function payloadOf(personal: AppState, team: TeamState, createdAt = new Date().toISOString()): BackupPayload {
