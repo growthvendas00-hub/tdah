@@ -30,7 +30,7 @@ export function Navigation({ state, teamState, view, mobileOpen, navigate, close
       <div className="level-card">
         <div className="level-card-head"><span><Zap size={15} /> Nível {state.level}</span><small>{state.xp % 100}/100 XP</small></div>
         <div className="soft-progress"><i style={{ width: `${state.xp % 100}%` }} /></div>
-        <p>Mais um pouco e você evolui.</p>
+        <p><strong>{state.xp} XP total</strong> · faltam {100 - state.xp % 100} para o nível {state.level + 1}.</p>
       </div>
       <div className="side-account"><span className="player-avatar small" style={{ background: teamState.user?.avatarColor }}>{teamState.user?.displayName.slice(0, 1) ?? '?'}</span><div><strong>{teamState.user?.displayName ?? 'Sem conta'}</strong><small>{teamState.mode === 'cloud' ? 'conta sincronizada' : 'modo demonstração'}</small></div><div className="side-account-actions"><button onClick={() => navigate('conta')} aria-label="Abrir conta" title="Conta"><UserCircle size={18} /></button><button className={view === 'configuracoes' ? 'active' : ''} onClick={() => navigate('configuracoes')} aria-label="Abrir configurações" title="Configurações"><Settings size={18} /></button></div></div>
     </aside>
@@ -38,7 +38,7 @@ export function Navigation({ state, teamState, view, mobileOpen, navigate, close
       <button className="icon-button mobile-menu" onClick={openMobile} aria-label="Abrir menu"><Menu size={20} /></button>
       <div className="mobile-logo"><Logo /><strong>Foco</strong></div>
       <div className="header-spacer" />
-      <button className="header-progress" onClick={() => navigate('semana')}><span>Nível {state.level}</span><div className="soft-progress"><i style={{ width: `${state.xp % 100}%` }} /></div><small>{100 - state.xp % 100} XP</small></button>
+      <button className="header-progress" onClick={() => navigate('semana')} title={`${state.xp} XP total`}><span>Nível {state.level}</span><div className="soft-progress"><i style={{ width: `${state.xp % 100}%` }} /></div><small>faltam {100 - state.xp % 100} XP</small></button>
       <button className="header-coins" onClick={() => navigate('recompensas')}><Coins size={16} /><strong>{state.coins}</strong><span>moedas</span></button>
       <button className="icon-button" onClick={() => navigate('semana')} aria-label="Ver atividades"><Bell size={18} />{todayCount > 0 && <b />}</button>
       <button className="profile-button" onClick={() => navigate('conta')}>{teamState.user?.displayName.slice(0, 1).toUpperCase() || state.settings.displayName?.slice(0, 1).toUpperCase() || 'F'}</button>

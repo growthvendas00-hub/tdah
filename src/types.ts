@@ -2,6 +2,7 @@ export type Energy = 'baixa' | 'media' | 'alta'
 export type View = 'hoje' | 'semana' | 'planejamento' | 'equipe' | 'habitos' | 'recompensas' | 'conta' | 'configuracoes'
 export type PlanningTab = 'rotina' | 'projetos' | 'objetivos'
 export type Theme = 'sereno' | 'lavanda'
+export type ColorMode = 'light' | 'dark'
 export type TechniqueId = 'pomodoro' | 'sprint-gentil' | 'timeboxing' | 'primeiro-passo'
 
 export interface Mission {
@@ -94,6 +95,7 @@ export interface Reward {
 export interface SettingsData {
   displayName: string
   activeTheme: Theme
+  colorMode: ColorMode
   reducedMotion: boolean
   dailyScreenLimit: number
   dayStart: string

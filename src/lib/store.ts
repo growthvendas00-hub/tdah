@@ -24,6 +24,7 @@ export function createInitialState(): AppState {
     settings: {
       displayName: '',
       activeTheme: 'sereno',
+      colorMode: 'light',
       reducedMotion: false,
       dailyScreenLimit: 180,
       dayStart: '08:00',
@@ -83,7 +84,11 @@ function migrateLegacy(legacy: Partial<AppState> & { name?: string; projects?: P
 export function loadState(): AppState {
   try {
     const current = localStorage.getItem(currentKey)
-    if (current) return { ...createInitialState(), ...JSON.parse(current), version: 2 }
+    if (current) {
+      const fresh = createInitialState()
+      const saved = JSON.parse(current) as Partial<AppState>
+      return { ...fresh, ...saved, settings: { ...fresh.settings, ...(saved.settings ?? {}) }, version: 2 }
+    }
     const legacy = localStorage.getItem(legacyKey)
     if (legacy) return migrateLegacy(JSON.parse(legacy))
   } catch { /* use a fresh, valid state */ }

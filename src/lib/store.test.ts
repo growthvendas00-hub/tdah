@@ -29,10 +29,20 @@ describe('local persistence and migration', () => {
     const state = createInitialState()
     state.settings.displayName = 'Kondi'
     state.settings.activeTheme = 'lavanda'
+    state.settings.colorMode = 'dark'
     saveState(state)
     const loaded = loadState()
     expect(loaded.settings.displayName).toBe('Kondi')
     expect(loaded.settings.activeTheme).toBe('lavanda')
+    expect(loaded.settings.colorMode).toBe('dark')
+  })
+
+  it('adds new preference defaults to previously saved states', () => {
+    const saved = createInitialState()
+    const oldSettings = { ...saved.settings } as Partial<typeof saved.settings>
+    delete oldSettings.colorMode
+    values.set('foco-app-v3', JSON.stringify({ ...saved, settings: oldSettings }))
+    expect(loadState().settings.colorMode).toBe('light')
   })
 
   it('migrates legacy missions and projects without losing progress', () => {

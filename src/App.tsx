@@ -43,10 +43,10 @@ function App() {
   function complete(mission: Mission) { if (mission.completed) return; actions.completeMission(mission.id); setCelebration(mission) }
   const milestoneProject = state.projects.find((item) => item.id === milestoneProjectId)
 
-  return <div className={`app-shell theme-${state.settings.activeTheme} ${state.settings.reducedMotion ? 'reduce-motion' : ''}`}>
+  return <div className={`app-shell theme-${state.settings.activeTheme} mode-${state.settings.colorMode} ${state.settings.reducedMotion ? 'reduce-motion' : ''}`}>
     <Navigation state={state} teamState={team.state} view={view} mobileOpen={mobileMenu} navigate={navigate} closeMobile={() => setMobileMenu(false)} openMobile={() => setMobileMenu(true)} openSearch={() => setDialog('search')} />
     <main className="main-content">
-      {view === 'hoje' && <TodayPage state={state} missions={todayMissions} actions={actions} complete={complete} openMission={() => { setMissionGoalId(undefined); setDialog('mission') }} navigate={navigate} openPlanning={openPlanning} />}
+      {view === 'hoje' && <TodayPage state={state} missions={todayMissions} actions={actions} complete={complete} openMission={() => { setMissionGoalId(undefined); setDialog('mission') }} />}
       {view === 'semana' && <WeekPage state={state} />}
       {view === 'planejamento' && <PlanningPage state={state} actions={actions} tab={planningTab} setTab={setPlanningTab} openRoutine={() => setDialog('routine')} openProject={() => setDialog('project')} openGoal={() => setDialog('goal')} openMission={(goalId) => { setMissionGoalId(goalId); setDialog('mission') }} openMilestone={setMilestoneProjectId} notify={notify} />}
       {view === 'equipe' && <TeamPage state={team.state} actions={team.actions} openAccount={() => navigate('conta')} notify={notify} />}

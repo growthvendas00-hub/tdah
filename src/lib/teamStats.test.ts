@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { dayOffset } from './store'
-import { habitAverage, pointsForPriority, workspaceRanking } from './teamStats'
+import { habitAverage, habitWeekSeries, pointsForPriority, workspaceRanking } from './teamStats'
 import type { TeamActivity, TeamProfile } from '../types/team'
 
 const players: TeamProfile[] = [
@@ -32,5 +32,12 @@ describe('team gamification', () => {
     ]
     expect(habitAverage(logs, 'p')).toBe(7)
     expect(habitAverage(logs, 'missing')).toBeNull()
+  })
+
+  it('previews today in the habit graph without mutating saved logs', () => {
+    const logs = [{ id: '1', planId: 'p', userId: 'a', date: dayOffset(0), amount: 2 }]
+    const series = habitWeekSeries(logs, 'p', 3)
+    expect(series.at(-1)).toMatchObject({ amount: 3, preview: true })
+    expect(logs[0].amount).toBe(2)
   })
 })

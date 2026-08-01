@@ -45,25 +45,25 @@ npm audit
 ## 5. Inicialização e armazenamento
 
 1. `main.tsx` monta `App` em `#root`.
-2. `useFocoState` carrega `foco-app-v3`; o estado novo não contém histórico falso.
+2. `useFocoState` carrega `foco-app-v3`; preferências novas recebem padrão por merge interno, sem apagar configurações antigas.
 3. `useTeamState` verifica as variáveis Supabase.
 4. Sem variáveis, carrega `foco-team-v2` com a demonstração solicitada.
 5. Com variáveis, recupera a sessão e consulta somente workspaces permitidos pela RLS.
 6. Estado pessoal salva automaticamente no navegador.
-7. Estado colaborativo salva no PostgreSQL e atualiza por Realtime.
+7. Estado colaborativo salva no PostgreSQL e atualiza por Realtime; hábitos do usuário também escutam mudanças da própria conta.
 
 As chaves antigas não são carregadas, portanto os exemplos fictícios anteriores não reaparecem.
 
 ## 6. Navegação principal
 
-- `hoje`: próximos passos, manhã, foco, tela e rotina;
+- `hoje`: XP detalhado, próximos passos, manhã, anotações, foco e tela;
 - `semana`: gráfico e histórico dos últimos sete dias;
 - `planejamento`: rotina, projetos e objetivos pessoais;
 - `equipe`: workspace Metas Business;
 - `habitos`: registro privado de redução de tabaco/cannabis;
 - `recompensas`: loja pessoal;
 - `conta`: cadastro, login, perfil ou troca do jogador demo;
-- `configuracoes`: preferências, demonstração, backup, importação e recuperação.
+- `configuracoes`: preferências, claro/escuro, demonstração, backup, importação e recuperação.
 
 A sidebar e o menu mobile ficam em `Navigation.tsx`. Conta e Configurações ficam juntas no cartão de perfil, no rodapé esquerdo. `Ctrl/Cmd + K` abre busca e `Escape` fecha diálogos pessoais.
 
@@ -78,7 +78,9 @@ O começo da manhã possui dois check-ins sem pontuação:
 
 O segundo é apenas lembrete privado. O sistema não informa dose, não recomenda horário, não concede moeda e não envia o dado ao workspace.
 
-Tela é registrada manualmente. O limite é referência sem punição. Foco pode ser registrado em blocos de 25 minutos. Anotações do dia salvam automaticamente por data, ficam apenas no dispositivo e aceitam até 4.000 caracteres.
+Tela é registrada manualmente. O limite é referência sem punição. Foco pode ser registrado em blocos de 25 minutos. Anotações do dia salvam automaticamente por data, ficam apenas no dispositivo e aceitam até 4.000 caracteres. O resumo de XP mostra nível, progresso de 100 XP, total, ganho do dia, moedas e objetivos; semana, rotina e objetivos ficam nas áreas próprias para não duplicar informação.
+
+Em Hábitos, `+ / −` atualiza imediatamente uma prévia do gráfico. “Registrar/Atualizar hoje” persiste um único registro por plano/data e só então troca para “Salvo hoje”. Referência, alvo e estratégia são rascunhos até “Salvar ajustes”; erros mantêm o valor na tela. Saúde não concede XP.
 
 ## 8. Planejamento pessoal
 
@@ -121,7 +123,7 @@ Workspace
 
 - **Metas:** lista por prioridade, progresso, XP conquistado/disponível e abas Execução, Mapa mental e Histórico;
 - **Quadro:** caixa de entrada, hoje, andamento, revisão e concluídas;
-- **Operações:** visão das frentes, metas, tarefas e progresso;
+- **Operações:** visão das frentes, metas, tarefas e progresso; abrir um card leva à primeira meta vinculada, e uma operação vazia abre a criação já vinculada;
 - **Ideias:** captura e triagem;
 - **Ranking:** XP diário ou semanal;
 - **Equipe:** convite, perfil, nível, troféus e entregas.
@@ -199,6 +201,7 @@ Aplicar as migrations em ordem:
 1. `202607290001_collaboration.sql` — base, Auth, RLS e gamificação;
 2. `202607310001_goals_first.sql` — metas completas, CRUD, subtarefas, ideias e bônus idempotente.
 3. `202607310002_mindmaps_waiting.sql` — espera programada, histórico de status e mapa mental seguro.
+4. `202608010001_realtime.sql` — publicação idempotente das tabelas observadas por Realtime; não altera dados.
 
 ## 16. Segurança
 
@@ -247,7 +250,7 @@ Erros do Supabase interrompem o formulário e aparecem na tela; a UI não confir
 ## 18. Supabase e Vercel
 
 1. Criar projeto no Supabase.
-2. Rodar as três migrations no SQL Editor, na ordem acima.
+2. Rodar as quatro migrations no SQL Editor, na ordem acima; em banco já configurado, executar apenas a quarta nova migration.
 3. Na Vercel, cadastrar `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
 4. Não cadastrar `service_role`.
 5. Fazer deploy e criar as duas contas.
@@ -266,7 +269,9 @@ npm run build
 npm audit --audit-level=high
 ```
 
-Fluxos mínimos: abrir meta; conclusão; espera; histórico; XP; CRUD; mapa; anotação; bônus idempotente; ranking; demo → restauração idêntica; exportação → importação; arquivo corrompido/relação quebrada; recuperação; convite cloud; isolamento; recarga; desktop e mobile.
+Fluxos mínimos: abrir meta/operação; conclusão; espera; histórico; XP; CRUD; mapa; anotação; hábito prévia → salvar → atualizar; claro/escuro; bônus idempotente; ranking; demo → restauração idêntica; exportação → importação; arquivo corrompido/relação quebrada; recuperação; convite cloud; isolamento; recarga; desktop e mobile.
+
+Auditoria atual percorre as oito áreas principais, três planejamentos e seis abas Business; valida controles habilitados, console limpo, tema, XP, hábito, operação e larguras 375/768/1440 px. A persistência cloud é coberta por contrato SQL e tratamento de erro; integração real em duas contas depende de um Supabase configurado.
 
 Limites atuais: painel pessoal permanece local; convite é por código; não há anexos, comentários, calendário externo, timer contínuo ou notificações do sistema; teste Supabase exige um projeto externo; a automação visual depende do navegador local conseguir anexar a aba.
 

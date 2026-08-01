@@ -1,16 +1,15 @@
-import { ArrowRight, BatteryFull, BatteryLow, BatteryMedium, Check, CheckCircle2, Clock3, Coins, Crosshair, HeartPulse, MonitorSmartphone, Plus, Sparkles, StickyNote, Target, TimerReset, Zap } from 'lucide-react'
+import { BatteryFull, BatteryLow, BatteryMedium, Check, CheckCircle2, Clock3, Coins, Crosshair, HeartPulse, MonitorSmartphone, Plus, StickyNote, Target, TimerReset, Trophy, Zap } from 'lucide-react'
 import { localDate } from '../lib/store'
-import { clampProgress, currentStreak, todayActivities } from '../lib/stats'
+import { clampProgress, todayActivities } from '../lib/stats'
 import type { FocoActions } from '../hooks/useFocoState'
-import type { AppState, Energy, Mission, PlanningTab, View } from '../types'
-import { WeekChart } from '../components/WeekChart'
+import type { AppState, Energy, Mission } from '../types'
 
 const energy = {
   baixa: { label: 'Leve', icon: BatteryLow }, media: { label: 'Estável', icon: BatteryMedium }, alta: { label: 'Com gás', icon: BatteryFull },
 }
 
-export function TodayPage({ state, missions, actions, complete, openMission, navigate, openPlanning }: {
-  state: AppState; missions: Mission[]; actions: FocoActions; complete: (mission: Mission) => void; openMission: () => void; navigate: (view: View) => void; openPlanning: (tab: PlanningTab) => void
+export function TodayPage({ state, missions, actions, complete, openMission }: {
+  state: AppState; missions: Mission[]; actions: FocoActions; complete: (mission: Mission) => void; openMission: () => void
 }) {
   const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
   const active = missions.filter((item) => !item.completed).sort((a, b) => {
@@ -22,8 +21,9 @@ export function TodayPage({ state, missions, actions, complete, openMission, nav
   const completed = missions.filter((item) => item.completed).length
   const screen = state.screenLogs.find((item) => item.date === localDate())?.minutes ?? 0
   const screenProgress = clampProgress(screen, state.settings.dailyScreenLimit)
-  const todayRoutine = state.routine.blocks.filter((item) => item.days.includes(new Date().getDay()))
   const dailyNote = state.dailyNotes.find((item) => item.date === localDate())
+  const todayXp = activities.reduce((sum, item) => sum + item.xp, 0)
+  const levelXp = state.xp % 100
   return <div className="page today-page">
     <section className="day-intro">
       <div><p className="eyebrow">{date}</p><h1>{state.settings.displayName ? `Oi, ${state.settings.displayName}.` : 'Oi, vamos com calma.'}</h1><p>Escolha um passo possível. O resto pode esperar um pouco.</p></div>
@@ -32,6 +32,8 @@ export function TodayPage({ state, missions, actions, complete, openMission, nav
         <div>{(Object.keys(energy) as Energy[]).map((value) => { const Icon = energy[value].icon; return <button key={value} className={state.energy === value ? 'selected' : ''} onClick={() => actions.setEnergy(value)}><Icon size={17} />{energy[value].label}</button> })}</div>
       </div>
     </section>
+
+    <section className="xp-overview surface" aria-label="Progresso de experiência"><div><span><Zap size={19} /></span><div><small>NÍVEL {state.level}</small><strong>{levelXp} de 100 XP</strong></div></div><div className="xp-overview-progress"><div className="soft-progress"><i style={{ width: `${levelXp}%` }} /></div><small>Faltam {100 - levelXp} XP para o nível {state.level + 1}</small></div><div className="xp-overview-stats"><span><strong>{state.xp}</strong> XP total</span><span><strong>+{todayXp}</strong> hoje</span><span><Coins size={14} /><strong>{state.coins}</strong> moedas</span><span><Trophy size={14} /><strong>{state.activities.filter((item) => item.type === 'goal').length}</strong> objetivos</span></div></section>
 
     <section className="morning-checkin surface">
       <div className="section-title compact"><div><p className="eyebrow">COMEÇO DA MANHÃ</p><h2>Dois lembretes, sem pontuação</h2></div><HeartPulse size={21} /></div>
@@ -68,11 +70,5 @@ export function TodayPage({ state, missions, actions, complete, openMission, nav
       </aside>
     </div>
 
-    <div className="dashboard-grid lower-grid">
-      <section className="surface week-preview"><div className="section-title"><div><p className="eyebrow">ÚLTIMOS 7 DIAS</p><h2>Seu ritmo da semana</h2></div><button className="text-link" onClick={() => navigate('semana')}>Ver histórico <ArrowRight size={15} /></button></div><WeekChart state={state} /><div className="week-mini-stats"><span><strong>{activities.length}</strong> ações hoje</span><span><strong>{currentStreak(state)}</strong> dias voltando</span><span><strong>{state.goals.filter((item) => item.completed).length}</strong> objetivos alcançados</span></div></section>
-      <section className="surface routine-preview"><div className="section-title compact"><div><p className="eyebrow">ROTINA DE HOJE</p><h2>Próximos blocos</h2></div><button className="icon-soft" onClick={() => openPlanning('rotina')}><ArrowRight size={16} /></button></div>{todayRoutine.length ? <div className="routine-mini-list">{todayRoutine.map((block) => { const done = block.completedDates.includes(localDate()); return <button className={done ? 'done' : ''} key={block.id} onClick={() => actions.toggleRoutineBlock(block.id)}><span>{block.start}</span><div><strong>{block.title}</strong><small>{block.end} · energia {block.energy}</small></div><Check size={16} /></button> })}</div> : <div className="empty-compact"><p>Nenhum bloco planejado para hoje.</p><button onClick={() => openPlanning('rotina')}>Planejar rotina</button></div>}</section>
-    </div>
-
-    <section className="goals-row"><div className="section-title"><div><p className="eyebrow">O QUE IMPORTA</p><h2>Objetivos em movimento</h2></div><button className="text-link" onClick={() => openPlanning('objetivos')}>Planejar objetivos <ArrowRight size={15} /></button></div><div className="goal-preview-grid">{state.goals.slice(0, 3).map((goal) => <article key={goal.id}><div><Sparkles size={16} /><span>{goal.area}</span></div><h3>{goal.title}</h3><div className="soft-progress"><i style={{ width: `${clampProgress(goal.current, goal.target)}%` }} /></div><p><strong>{goal.current}</strong> de {goal.target} {goal.unit}</p></article>)}</div></section>
   </div>
 }
